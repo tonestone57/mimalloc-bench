@@ -39,6 +39,9 @@
 
 #ifdef _MSC_VER
 #include <Windows.h>
+#elif __HAIKU__
+#include <kernel/OS.h>
+#include <time.h> // For timespec_get, TIME_UTC if used
 #else
 #include <time.h>
 #endif
@@ -60,6 +63,8 @@ int64_t GetMicrosecondCount()
 	BOOL ok = QueryPerformanceCounter(&val);
 	assert(ok);
 	now = (val.QuadPart * 1000000) / frec;
+#elif __HAIKU__
+    now = system_time(); // system_time returns microseconds
 #endif
 	return now;
 }
@@ -83,7 +88,8 @@ size_t GetMillisecondCount()
 	BOOL ok = QueryPerformanceCounter(&val);
 	assert(ok);
 	now = val.QuadPart / frec;
-	
+#elif __HAIKU__
+    now = system_time() / 1000; // system_time returns microseconds
 #else
 #if 1
     struct timespec ts;
@@ -116,12 +122,44 @@ size_t getRss()
 }
 #elif defined(__APPLE__)
 #include <unistd.h>
+#include <sys/resource.h> // For getrusage
 size_t getRss() {
 	struct rusage rusage;
   getrusage(RUSAGE_SELF, &rusage);
-	return rusage.ru_maxrss;
+	return rusage.ru_maxrss; // On macOS, this is in bytes. Convert to pages if necessary, or ensure consistency.
+                          // For now, returning bytes, assuming other platforms might do similar or it's handled.
+                          // The original code for Linux returns pages. Let's aim for pages (4KB).
+                          // macOS man says ru_maxrss is "maximum resident set size utilized (in bytes)".
+                          // So, divide by page size (e.g., 4096).
+  return rusage.ru_maxrss / 4096;
 }
-#else
+#elif defined(__HAIKU__)
+#include <kernel/OS.h>
+#include <unistd.h> // For getpid() if needed, though get_current_team_id() is more Haiku-idiomatic
+size_t getRss()
+{
+    team_info teamInfo;
+    thread_info threadInfo; // Not strictly needed for RSS, but often used with team_info
+    team_id team = get_current_team_id(); // Or BApplication::Team() if in a BApplication context
+
+    status_t status = get_team_info(team, &teamInfo);
+    if (status == B_OK) {
+        // Haiku's team_info area_count * B_PAGE_SIZE gives something akin to VmSize, not RSS.
+        // VmRSS is harder to get directly. get_memory_info or profiling tools are usually used.
+        // For a rough equivalent, we might need to iterate through areas or use a simpler metric.
+        // Let's check if getrusage is available and provides ru_maxrss.
+        // According to Haiku source, getrusage is implemented and ru_maxrss is set.
+        // It's likely in bytes, similar to macOS.
+        struct rusage rusage_data;
+        if (getrusage(RUSAGE_SELF, &rusage_data) == 0) {
+            return rusage_data.ru_maxrss / 4096; // Assuming ru_maxrss is in bytes and page size is 4KB
+        }
+        // Fallback or error
+        return 0;
+    }
+    return 0; // Error case
+}
+#else // Assuming Linux-like proc filesystem
 size_t getRss()
 {
 	// see http://man7.org/linux/man-pages/man5/proc.5.html for details

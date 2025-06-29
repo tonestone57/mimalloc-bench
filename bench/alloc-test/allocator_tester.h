@@ -47,7 +47,11 @@
 
 #ifndef __GNUC__
 #include <intrin.h>
+#elif __HAIKU__
+// For __builtin_ctzll, Haiku's GCC should support it directly.
+// No specific include needed beyond what GCC provides.
 #else
+// Assuming other __GNUC__ environments also support __builtin_ctzll
 #endif
 
 #include "test_common.h"

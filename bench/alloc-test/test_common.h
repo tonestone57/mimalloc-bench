@@ -47,10 +47,21 @@
 #define ALIGN(n)      __declspec(align(n))
 #define NOINLINE      __declspec(noinline)
 #define FORCE_INLINE	__forceinline
-#elif __GNUC__
-#if defined(__APPLE__)
+#elif defined(__HAIKU__)
+#include <kernel/OS.h> // For system_time() as a timestamp source
+#include <time.h>      // For clock_gettime if preferred
+// Haiku has __rdtsc() available via <x86intrin.h> if needed,
+// but system_time() is often preferred for time measurements.
+// Let's use system_time() for get_timestamp for now, returning milliseconds
+// to match the macOS version. If rdtsc is strictly needed, this can change.
+static inline uint64_t get_timestamp(void) {
+  return system_time() / 1000; // system_time is microseconds
+}
+#define ALIGN(n)      __attribute__ ((aligned(n)))
+#define NOINLINE      __attribute__ ((noinline))
+#elif __GNUC__ // Catches Linux and other GCC environments
+#if defined(__APPLE__) // This should ideally be separate, or Haiku before this __GNUC__
 #include <time.h>
-//#if defined(CLOCK_REALTIME) || defined(CLOCK_MONOTONIC)
 static inline uint64_t get_timestamp(void) {
   struct timespec t;
   #ifdef CLOCK_MONOTONIC
@@ -60,7 +71,7 @@ static inline uint64_t get_timestamp(void) {
   #endif
   return ((uint64_t)t.tv_sec * 1000) + ((uint64_t)t.tv_nsec / 1000000);
 }
-#else
+#else // Assuming Linux or other GCC where rdtsc is common
 #include <x86intrin.h>
 static inline uint64_t get_timestamp(void) {
 	return __rdtsc();
