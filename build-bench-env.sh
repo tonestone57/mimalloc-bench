@@ -504,6 +504,7 @@ if test "$setup_packages" = "1"; then
     #   fg   -- uses execinfo.h (GNU extension)
     #   gd   -- glibc-specific internals
     #   hd   -- glibc-specific internals
+    #   hm   -- uses sys/prctl.h and sys/random.h (Linux-specific)
     #   lt   -- uses mallinfo (glibc)
     #   sm   -- uses MADV_HUGEPAGE (Linux-specific)
     #   scudo -- uses sys/auxv.h (Linux-specific)
@@ -520,6 +521,7 @@ if test "$haiku" = "1"; then
   setup_fg=0
   setup_gd=0
   setup_hd=0
+  setup_hm=0
   setup_lt=0
   setup_sm=0
   setup_scudo=0
