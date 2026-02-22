@@ -211,7 +211,9 @@ extern int rand();
 #define bzero(a,b) memset(a, 0, b)
 #else
 extern VOID_HACK srandom();
+#ifndef __HAIKU__
 extern long random();
+#endif
 #endif
 
 /*
