@@ -5,6 +5,8 @@ set(CMAKE_CXX_STANDARD 17)
 # Detect Haiku
 if(CMAKE_SYSTEM_NAME STREQUAL "Haiku")
   set(HAIKU ON)
+  # Ensure __HAIKU__ is defined even if the compiler doesn't do it by default
+  add_compile_definitions(__HAIKU__)
 endif()
 
 if (NOT CMAKE_BUILD_TYPE)
