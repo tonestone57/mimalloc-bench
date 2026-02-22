@@ -485,15 +485,15 @@ if test "$setup_packages" = "1"; then
     sudo pacman -S dos2unix wget cmake ninja automake libtool time gmp sed ghostscript bazelisk gflags snappy
   elif test "$haiku" = "1"; then
     # ruby       -- needed for rbstress benchmark
-    # gnu_time   -- GNU time, needed for -f format string in bench.sh
+    # time       -- GNU time, needed for -f format string in bench.sh
     # gnu_sed    -- GNU sed, needed for -E and -i.bak in bench.sh result parsing
     # dos2unix   -- needed to patch shbench source files
     echo ""
-    echo "> pkgman install -y gcc clang cmake ninja python3 automake libtool autoconf git wget dos2unix bc gmp_devel gnu_sed coreutils ruby libatomic_ops_devel gnu_time snappy_devel readline_devel"
+    echo "> pkgman install -y gcc clang cmake ninja python3 automake libtool autoconf git wget dos2unix bc gmp_devel gnu_sed coreutils ruby libatomic_ops_devel time snappy_devel readline_devel"
     echo ""
     pkgman install -y gcc clang cmake ninja python3 automake libtool autoconf \
       git wget dos2unix bc gmp_devel gnu_sed coreutils \
-      ruby libatomic_ops_devel gnu_time \
+      ruby libatomic_ops_devel time \
       snappy_devel readline_devel
     haikuinstallbazel
     # Allocators not expected to build on Haiku:
