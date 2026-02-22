@@ -1,5 +1,5 @@
---- SH8BENCH.C	2026-02-22 21:23:53.831085365 +0000
-+++ sh8bench-new.c	2026-02-22 21:24:15.107085126 +0000
+--- SH8BENCH.C	2026-02-22 21:39:54.875913317 +0000
++++ sh8bench-new.c	2026-02-22 21:42:55.507911283 +0000
 @@ -52,7 +52,7 @@
  #endif /* SYS_MULTI_THREAD */
 
@@ -54,16 +54,17 @@
 	if (argc > 1)
 		fin = fopen(argv[1], "r");
 	else
-@@ -200,7 +209,7 @@
+@@ -199,7 +208,8 @@
+	if (argc > 2)
 		fout = fopen(argv[2], "w");
 	else
-		fout = stdout;
--
+-		fout = stdout;
++		fout = stdout;
 +	#endif
+
 	if (argc > 3)
 		ulHeapSize = atol(argv[3]);
-	else
-@@ -215,7 +224,7 @@
+@@ -215,7 +225,7 @@
 	if (argc > 5)
 		ulThreadCount = atol(argv[5]);
 	else
@@ -72,7 +73,7 @@
 
 	if (argc > 6)
 		ulForeignAllocCount = atol(argv[5]);
-@@ -240,7 +249,7 @@
+@@ -240,7 +250,7 @@
 		void *threadArg = NULL;
 
  #ifdef WIN32
@@ -81,7 +82,7 @@
 
 		if (uCPUs)
 		{
-@@ -539,11 +548,14 @@
+@@ -539,10 +549,13 @@
 
 				mp = memory;
 			}
@@ -91,13 +92,12 @@
 			{
 				printf("Out of memory\n");
 				_exit (1);
-			}
-+				char* p = mp[-1]; p[0] = 0; p[size-1] = 0;
 +			}
++				char* p = mp[-1]; p[0] = 0; p[size-1] = 0;
+			}
 		}
 	}
-
-@@ -577,6 +589,7 @@
+@@ -577,6 +590,7 @@
  {
 	char *arg = NULL, *err;
 	unsigned long result;
@@ -105,7 +105,7 @@
 	{
 		char buf[12];
 		static char fmt[] = "\n%s [%lu]: ";
-@@ -585,6 +598,7 @@
+@@ -585,6 +599,7 @@
 		if (fgets(buf, 11, fin))
 			arg = &buf[0];
 	}
@@ -113,7 +113,25 @@
 	if (arg && ((result = strtoul(arg, &err, 10)) != 0
 					|| (*err == '\n' && arg != err)))
 	{
-@@ -701,6 +715,8 @@
+@@ -619,7 +634,7 @@
+							 (pthread_startroutine_t)fn, arg) == -1)
+		 return THREAD_NULL;
+
+-#elif defined(_POSIX_THREADS) || defined(_POSIX_REENTRANT_FUNCTIONS)
++#elif defined(_POSIX_THREADS) || defined(_POSIX_REENTRANT_FUNCTIONS) || defined(__HAIKU__)
+	pthread_attr_t attr;
+	pthread_attr_init(&attr);
+ #ifdef _AIX
+@@ -654,7 +669,7 @@
+	while (tidCnt--)
+		thr_join(0, NULL, NULL);
+
+-#elif defined(_POSIX_THREADS) || defined(_POSIX_REENTRANT_FUNCTIONS)
++#elif defined(_POSIX_THREADS) || defined(_POSIX_REENTRANT_FUNCTIONS) || defined(__HAIKU__)
+	while (tidCnt--)
+		pthread_join(tids[tidCnt], NULL);
+
+@@ -701,6 +716,8 @@
 	return get_nprocs();
  #elif defined(_SC_NPROCESSORS_ONLN)
 	return sysconf(_SC_NPROCESSORS_ONLN);

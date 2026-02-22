@@ -1,5 +1,5 @@
---- sh6bench.c	2026-02-22 21:23:53.831085365 +0000
-+++ sh6bench-new.c	2026-02-22 21:24:15.103085126 +0000
+--- sh6bench.c	2026-02-22 21:39:54.759913318 +0000
++++ sh6bench-new.c	2026-02-22 21:42:55.503911283 +0000
 @@ -50,7 +50,7 @@
  #endif /* SYS_MULTI_THREAD */
 
@@ -18,17 +18,16 @@
  #define _INCLUDE_POSIX_SOURCE
  #include <sys/signal.h>
  #include <pthread.h>
-@@ -110,7 +110,8 @@
+@@ -110,7 +110,7 @@
  /* Note: the SmartHeap header files must be included _after_ any files that
   * declare malloc et al
   */
 -#include "smrtheap.h"
 +// #include "smrtheap.h"
-+
  #ifdef MALLOC_ONLY
  #undef malloc
  #undef realloc
-@@ -152,7 +153,7 @@
+@@ -152,7 +152,7 @@
  FILE *fout, *fin;
  unsigned uMaxBlockSize = 1000;
  unsigned uMinBlockSize = 1;
@@ -37,7 +36,7 @@
 
  unsigned long promptAndRead(char *msg, unsigned long defaultVal, char fmtCh);
 
-@@ -195,7 +196,16 @@
+@@ -195,7 +195,16 @@
  #endif
 
 	setbuf(stdout, NULL);  /* turn off buffering for output */
@@ -55,15 +54,16 @@
 	if (argc > 1)
 		fin = fopen(argv[1], "r");
 	else
-@@ -204,7 +214,7 @@
+@@ -203,7 +212,8 @@
+	if (argc > 2)
 		fout = fopen(argv[2], "w");
 	else
-		fout = stdout;
--
+-		fout = stdout;
++		fout = stdout;
 +#endif
+
 	ulCallCount = promptAndRead("call count", ulCallCount, 'u');
 	uMinBlockSize = (unsigned)promptAndRead("min block size",uMinBlockSize,'u');
-	uMaxBlockSize = (unsigned)promptAndRead("max block size",uMaxBlockSize,'u');
 @@ -220,7 +230,7 @@
 		ThreadID *tids;
 
@@ -132,6 +132,24 @@
 	if (arg && ((result = strtoul(arg, &err, 10)) != 0
 					|| (*err == '\n' && arg != err)))
 	{
+@@ -429,7 +451,7 @@
+							 (pthread_startroutine_t)fn, arg) == -1)
+		 return THREAD_NULL;
+
+-#elif defined(_POSIX_THREADS) || defined(_POSIX_REENTRANT_FUNCTIONS)
++#elif defined(_POSIX_THREADS) || defined(_POSIX_REENTRANT_FUNCTIONS) || defined(__HAIKU__)
+	pthread_attr_t attr;
+	pthread_attr_init(&attr);
+ #ifdef _AIX
+@@ -462,7 +484,7 @@
+	while (tidCnt--)
+		thr_join(0, NULL, NULL);
+
+-#elif defined(_POSIX_THREADS) || defined(_POSIX_REENTRANT_FUNCTIONS)
++#elif defined(_POSIX_THREADS) || defined(_POSIX_REENTRANT_FUNCTIONS) || defined(__HAIKU__)
+	while (tidCnt--)
+		pthread_join(tids[tidCnt], NULL);
+
 @@ -509,6 +531,8 @@
 	return get_nprocs();
  #elif defined(_SC_NPROCESSORS_ONLN)
