@@ -1,52 +1,143 @@
-113c113,114
-< #include "smrtheap.h"
----
-> // #include "smrtheap.h"
-> 
-155c156
-< unsigned long ulCallCount = 1000;
----
-> unsigned long ulCallCount = 10000;
-198c199,208
-< 
----
-> #ifdef BENCH
-> 	fin = stdin;
-> 	fout = stdout;
->   unsigned int defaultThreadCount = GetNumProcessors();
-> 	if (argc==2) {
-> 		char* end;
-> 		long l = strtol(argv[1],&end,10);
-> 		if (l > 0) defaultThreadCount = l;
-> 	}
-> #else
-207c217
-< 
----
-> #endif
-223c233
-< 		unsigned uCPUs = promptAndRead("CPUs (0 for all)", 0, 'u');
----
-> 		unsigned uCPUs = promptAndRead("CPUs (0 for all)", PROCS, 'u');
-256c266
-< 		uThreadCount = (int)promptAndRead("threads", GetNumProcessors(), 'u');
----
-> 		uThreadCount = (int)promptAndRead("threads", defaultThreadCount, 'u');
-259a270,276
-> 
-> 		if (uThreadCount==1) {
-> 			startCPU = clock();
-> 			startTime = time(NULL);
-> 			doBench(NULL);
-> 		}
-> 		else {
-277a295
-> 	}
-301a320
-> 	exit(0);
-341a361
-> 				char* p = mp[-1]; p[0] = 0; p[size-1] = 0;
-389a410
-> #ifndef BENCH
-397a419
-> #endif
+--- sh6bench.c	2026-02-22 20:35:16.892510701 +0000
++++ sh6bench-new.c	2026-02-22 20:37:10.528509422 +0000
+@@ -50,7 +50,7 @@
+ #endif /* SYS_MULTI_THREAD */
+
+ #elif defined(UNIX) || defined(__hpux) || defined(_AIX) || defined(__sun) \
+-	|| defined(sgi) || defined(__DGUX__) || defined(__linux__)
++	|| defined(sgi) || defined(__DGUX__) || defined(__linux__) || defined(__HAIKU__)
+ /* Unix prototypes */
+ #ifndef UNIX
+ #define UNIX 1
+@@ -58,7 +58,7 @@
+ #include <unistd.h>
+ #ifdef SYS_MULTI_THREAD
+ #if defined(__hpux) || defined(__osf__) || defined(_AIX) || defined(sgi) \
+-	|| defined(__DGUX__) || defined(__linux__)
++	|| defined(__DGUX__) || defined(__linux__) || defined(__HAIKU__)
+ #define _INCLUDE_POSIX_SOURCE
+ #include <sys/signal.h>
+ #include <pthread.h>
+@@ -110,7 +110,8 @@
+ /* Note: the SmartHeap header files must be included _after_ any files that
+  * declare malloc et al
+  */
+-#include "smrtheap.h"
++// #include "smrtheap.h"
++
+ #ifdef MALLOC_ONLY
+ #undef malloc
+ #undef realloc
+@@ -152,7 +153,7 @@
+ FILE *fout, *fin;
+ unsigned uMaxBlockSize = 1000;
+ unsigned uMinBlockSize = 1;
+-unsigned long ulCallCount = 1000;
++unsigned long ulCallCount = 10000;
+
+ unsigned long promptAndRead(char *msg, unsigned long defaultVal, char fmtCh);
+
+@@ -195,7 +196,16 @@
+ #endif
+
+	setbuf(stdout, NULL);  /* turn off buffering for output */
+-
++#ifdef BENCH
++	fin = stdin;
++	fout = stdout;
++  unsigned int defaultThreadCount = GetNumProcessors();
++	if (argc==2) {
++		char* end;
++		long l = strtol(argv[1],&end,10);
++		if (l > 0) defaultThreadCount = l;
++	}
++#else
+	if (argc > 1)
+		fin = fopen(argv[1], "r");
+	else
+@@ -204,7 +214,7 @@
+		fout = fopen(argv[2], "w");
+	else
+		fout = stdout;
+-
++#endif
+	ulCallCount = promptAndRead("call count", ulCallCount, 'u');
+	uMinBlockSize = (unsigned)promptAndRead("min block size",uMinBlockSize,'u');
+	uMaxBlockSize = (unsigned)promptAndRead("max block size",uMaxBlockSize,'u');
+@@ -220,7 +230,7 @@
+		ThreadID *tids;
+
+ #ifdef WIN32
+-		unsigned uCPUs = promptAndRead("CPUs (0 for all)", 0, 'u');
++		unsigned uCPUs = promptAndRead("CPUs (0 for all)", PROCS, 'u');
+
+		if (uCPUs)
+		{
+@@ -253,10 +263,17 @@
+		}
+ #endif /* WIN32 */
+
+-		uThreadCount = (int)promptAndRead("threads", GetNumProcessors(), 'u');
++		uThreadCount = (int)promptAndRead("threads", defaultThreadCount, 'u');
+
+		if (uThreadCount < 1)
+			uThreadCount = 1;
++
++		if (uThreadCount==1) {
++			startCPU = clock();
++			startTime = time(NULL);
++			doBench(NULL);
++		}
++		else {
+		ulCallCount /= uThreadCount;
+		if ((tids = malloc(sizeof(ThreadID) * uThreadCount)) != NULL)
+		{
+@@ -275,6 +292,7 @@
+		if (threadArg)
+			free(threadArg);
+	}
++	}
+ #else
+	startCPU = clock();
+	startTime = time(NULL);
+@@ -299,6 +317,7 @@
+		fclose(fin);
+	if (fout != stdout)
+		fclose(fout);
++	exit(0);
+ }
+
+ void doBench(void *arg)
+@@ -339,6 +358,7 @@
+					printf("Out of memory\n");
+					_exit (1);
+				}
++				char* p = mp[-1]; p[0] = 0; p[size-1] = 0;
+
+	  /* while allocating skip over that portion of the buffer that still
+	     holds pointers from the previous cycle
+@@ -387,6 +407,7 @@
+ {
+	char *arg = NULL, *err;
+	unsigned long result;
++#ifndef BENCH
+	{
+		char buf[12];
+		static char fmt[] = "\n%s [%lu]: ";
+@@ -395,6 +416,7 @@
+		if (fgets(buf, 11, fin))
+			arg = &buf[0];
+	}
++#endif
+	if (arg && ((result = strtoul(arg, &err, 10)) != 0
+					|| (*err == '\n' && arg != err)))
+	{
+@@ -509,6 +531,8 @@
+	return get_nprocs();
+ #elif defined(_SC_NPROCESSORS_ONLN)
+	return sysconf(_SC_NPROCESSORS_ONLN);
++#elif defined(__HAIKU__)
++	return sysconf(_SC_NPROCESSORS_ONLN);
+
+ #elif defined(_SC_NPROCESSORS_CONF)
+	return sysconf(_SC_NPROCESSORS_CONF);
