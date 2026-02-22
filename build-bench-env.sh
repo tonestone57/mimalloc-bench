@@ -417,12 +417,6 @@ function brewinstall {
   brew install $1
 }
 
-function pkgmaninstall {
-  echo ""
-  echo "> pkgman install -y $1"
-  echo ""
-  pkgman install -y $1
-}
 
 function haikuinstallbazel {
   echo "NOTE: Bazel is not readily available for Haiku; tcg (Google tcmalloc) will be skipped."
@@ -494,10 +488,13 @@ if test "$setup_packages" = "1"; then
     # time_x86   -- GNU time, needed for -f format string in bench.sh
     # gnu_sed    -- GNU sed, needed for -E and -i.bak in bench.sh result parsing
     # dos2unix   -- needed to patch shbench source files
-    pkgmaninstall "gcc_x86 clang cmake ninja_x86 python3 automake libtool autoconf \
+    echo ""
+    echo "> pkgman install -y gcc_x86 clang cmake ninja_x86 python3 automake libtool autoconf git wget dos2unix bc gmp_x86_devel gnu_sed coreutils_x86 ruby_x86 libatomic_ops_x86_devel time_x86 snappy_x86_devel readline_x86_devel"
+    echo ""
+    pkgman install -y gcc_x86 clang cmake ninja_x86 python3 automake libtool autoconf \
       git wget dos2unix bc gmp_x86_devel gnu_sed coreutils_x86 \
       ruby_x86 libatomic_ops_x86_devel time_x86 \
-      snappy_x86_devel readline_x86_devel"
+      snappy_x86_devel readline_x86_devel
     haikuinstallbazel
     # Allocators not expected to build on Haiku:
     #   dh   -- uses __malloc_hook (glibc internal)
