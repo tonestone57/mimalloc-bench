@@ -417,7 +417,7 @@ function brewinstall {
   brew install $1
 }
 
-function pkgmaninstall {
+function pkgman_install {
   echo ""
   echo "> pkgman install -y $1"
   echo ""
@@ -494,7 +494,7 @@ if test "$setup_packages" = "1"; then
     # time_x86   -- GNU time, needed for -f format string in bench.sh
     # gnu_sed    -- GNU sed, needed for -E and -i.bak in bench.sh result parsing
     # dos2unix   -- needed to patch shbench source files
-    pkgmaninstall "gcc_x86 clang cmake ninja_x86 python3 automake libtool autoconf \
+    pkgman_install "gcc_x86 clang cmake ninja_x86 python3 automake libtool autoconf \
       git wget dos2unix bc gmp_x86_devel gnu_sed coreutils_x86 \
       ruby_x86 libatomic_ops_x86_devel time_x86 \
       snappy_x86_devel readline_x86_devel"
