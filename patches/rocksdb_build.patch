@@ -26,3 +26,13 @@ index 8f9c3ee2f0f..d0f1532aa3a 100644
  #include "rocksdb/rocksdb_namespace.h"
  #include "rocksdb/slice.h"
  #include "rocksdb/status.h"
+diff --git a/include/rocksdb/utilities/transaction_db_mutex.h b/include/rocksdb/utilities/transaction_db_mutex.h
+--- a/include/rocksdb/utilities/transaction_db_mutex.h
++++ b/include/rocksdb/utilities/transaction_db_mutex.h
+@@ -6,6 +6,7 @@
+ #pragma once
+
+ #include <memory>
++#include <cstdint>
+
+ #include "rocksdb/status.h"

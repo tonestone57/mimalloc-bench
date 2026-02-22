@@ -504,6 +504,7 @@ if test "$setup_packages" = "1"; then
     #   fg   -- uses execinfo.h (GNU extension)
     #   gd   -- glibc-specific internals
     #   hd   -- glibc-specific internals
+    #   hm   -- uses sys/prctl.h and sys/random.h (Linux-specific)
     #   lt   -- uses mallinfo (glibc)
     #   sm   -- uses MADV_HUGEPAGE (Linux-specific)
     #   scudo -- uses sys/auxv.h (Linux-specific)
@@ -520,6 +521,7 @@ if test "$haiku" = "1"; then
   setup_fg=0
   setup_gd=0
   setup_hd=0
+  setup_hm=0
   setup_lt=0
   setup_sm=0
   setup_scudo=0
@@ -674,6 +676,8 @@ fi
 
 if test "$setup_tcg" = "1"; then
   checkout tcg $version_tcg https://github.com/google/tcmalloc
+  # Fix bazel build with newer bazel/rules_cc (add load statement)
+  sed -i '1s/^/load("@rules_cc\/\/cc:defs.bzl", "cc_library")\n/' tcmalloc/BUILD
   bazel build -c opt tcmalloc
   popd
 fi
@@ -940,7 +944,12 @@ fi
 curdir=`pwd`
 
 phase "installed allocators"
-cat $devdir/version_*.txt 2>/dev/null | tee $devdir/versions.txt | column -t || true
+cat $devdir/version_*.txt 2>/dev/null > $devdir/versions.txt || true
+if command -v column >/dev/null 2>&1; then
+  column -t $devdir/versions.txt || cat $devdir/versions.txt
+else
+  cat $devdir/versions.txt
+fi
 
 phase "done in $curdir"
 echo "run the cfrac benchmarks as:"
