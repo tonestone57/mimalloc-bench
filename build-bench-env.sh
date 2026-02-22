@@ -940,7 +940,12 @@ fi
 curdir=`pwd`
 
 phase "installed allocators"
-cat $devdir/version_*.txt 2>/dev/null | tee $devdir/versions.txt | column -t || true
+cat $devdir/version_*.txt 2>/dev/null > $devdir/versions.txt || true
+if command -v column >/dev/null 2>&1; then
+  column -t $devdir/versions.txt || cat $devdir/versions.txt
+else
+  cat $devdir/versions.txt
+fi
 
 phase "done in $curdir"
 echo "run the cfrac benchmarks as:"

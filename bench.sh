@@ -469,7 +469,11 @@ while : ; do
             echo ""
             echo "installed allocators:"
             echo "  sys:    $libc"
-            column -t "$localdevdir/versions.txt" | sed 's/^/  /'
+            if command -v column >/dev/null 2>&1; then
+              column -t "$localdevdir/versions.txt"
+            else
+              cat "$localdevdir/versions.txt"
+            fi | sed 's/^/  /'
             echo ""
             exit 0;;
         *) warning "unknown option \"$1\"." 1>&2
@@ -501,7 +505,11 @@ if test "$verbose" = "yes"; then
   echo ""
   echo "installed allocators:"
   echo "  sys:    $libc"
-  column -t "$localdevdir/versions.txt" | sed 's/^/  /'
+  if command -v column >/dev/null 2>&1; then
+    column -t "$localdevdir/versions.txt"
+  else
+    cat "$localdevdir/versions.txt"
+  fi | sed 's/^/  /'
   echo ""
 fi
 
