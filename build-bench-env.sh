@@ -536,9 +536,13 @@ if test "$setup_hm" = "1"; then
   checkout hm $version_hm https://github.com/GrapheneOS/hardened_malloc
   if test "$haiku" = "1"; then
     patch -p1 < ../../patches/hardened_malloc_haiku.patch
+    export LDLIBS="-lbsd"
   fi
   make CONFIG_NATIVE=true CONFIG_WERROR=false VARIANT=light -j $proc
   make CONFIG_NATIVE=true CONFIG_WERROR=false VARIANT=default -j $proc
+  if test "$haiku" = "1"; then
+    unset LDLIBS
+  fi
   popd
 fi
 
