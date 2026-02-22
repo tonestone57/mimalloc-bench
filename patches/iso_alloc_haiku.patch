@@ -1,3 +1,28 @@
+diff --git a/Makefile b/Makefile
+index 82843a3..a32849b 100644
+--- a/Makefile
++++ b/Makefile
+@@ -235,6 +235,11 @@ STRIP = strip -s $(BUILD_DIR)/$(LIBNAME)
+ HUGE_PAGES =
+ endif
+
++ifeq ($(UNAME), Haiku)
++STRIP = strip -s $(BUILD_DIR)/$(LIBNAME)
++OS_FLAGS = -lbsd
++endif
++
+ ifeq ($(UNAME), SunOS)
+ STRIP = strip -s $(BUILD_DIR)/$(LIBNAME)
+ # this platform is both 32 and 64 bits
+@@ -277,7 +282,7 @@ all: tests
+ ## Build a release version of the library
+ library: clean
+	@echo "make library"
+-	$(CC) $(CFLAGS) $(LIBRARY) $(OPTIMIZE) $(OS_FLAGS) $(C_SRCS) -o $(BUILD_DIR)/$(LIBNAME)
++	$(CC) $(CFLAGS) $(LIBRARY) $(OPTIMIZE) $(C_SRCS) $(OS_FLAGS) -o $(BUILD_DIR)/$(LIBNAME)
+	$(STRIP)
+
+ ## Build a debug version of the library
 diff --git a/src/iso_alloc_random.c b/src/iso_alloc_random.c
 index 408c92b..e3a50b5 100644
 --- a/src/iso_alloc_random.c
