@@ -63,13 +63,13 @@ case "$OSTYPE" in
     ldpreload="LD_PRELOAD"
     extso=".so"
     # Use GNU time for full -f format string support.
-    # Install via: pkgman install time_x86
+    # Install via: pkgman install gnu_time
     if command -v gtime > /dev/null 2>&1; then
       timecmd=gtime
     elif [ -x /bin/time ] && /bin/time --version 2>&1 | grep -q GNU; then
       timecmd=/bin/time
     else
-      echo "warning: GNU time not found; install via: pkgman install time_x86"
+      echo "warning: GNU time not found; install via: pkgman install gnu_time"
       echo "         Benchmark timing output will be incomplete."
       timecmd="$(type -P time)"
     fi
