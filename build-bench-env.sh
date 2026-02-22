@@ -489,9 +489,9 @@ if test "$setup_packages" = "1"; then
     # gnu_sed    -- GNU sed, needed for -E and -i.bak in bench.sh result parsing
     # dos2unix   -- needed to patch shbench source files
     echo ""
-    echo "> pkgman install -y gcc clang cmake ninja python3 automake libtool autoconf git wget dos2unix bc gmp_devel gnu_sed coreutils ruby libatomic_ops_devel time snappy_devel readline_devel"
+    echo "> pkgman install -y gcc llvm12_clang cmake ninja python3 automake libtool autoconf git wget dos2unix bc gmp_devel gnu_sed coreutils ruby libatomic_ops_devel time snappy_devel readline_devel"
     echo ""
-    pkgman install -y gcc clang cmake ninja python3 automake libtool autoconf \
+    pkgman install -y gcc llvm12_clang cmake ninja python3 automake libtool autoconf \
       git wget dos2unix bc gmp_devel gnu_sed coreutils \
       ruby libatomic_ops_devel time \
       snappy_devel readline_devel
