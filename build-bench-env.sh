@@ -664,7 +664,7 @@ fi
 
 if test "$setup_tbb" = "1"; then
   checkout tbb $version_tbb https://github.com/oneapi-src/oneTBB
-  cmake -DCMAKE_BUILD_TYPE=Release -DTBB_BUILD=OFF -DTBB_TEST=OFF -DTBB_OUTPUT_DIR_BASE=bench .
+  cmake -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_BUILD_TYPE=Release -DTBB_BUILD=OFF -DTBB_TEST=OFF -DTBB_OUTPUT_DIR_BASE=bench .
   make -j $procs
   popd
 fi
