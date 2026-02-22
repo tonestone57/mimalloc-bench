@@ -481,7 +481,7 @@ if test "$setup_packages" = "1"; then
   elif brew --version 2> /dev/null >/dev/null; then
     brewinstall "dos2unix wget cmake ninja automake libtool gnu-time gmp mpir gnu-sed \
       ghostscript bazelisk gflags snappy"
-  elif grep -q 'Arch Linux' /etc/os-release; then
+  elif grep -q 'Arch Linux' /etc/os-release 2>/dev/null; then
     sudo pacman -S dos2unix wget cmake ninja automake libtool time gmp sed ghostscript bazelisk gflags snappy
   elif test "$haiku" = "1"; then
     # ruby       -- needed for rbstress benchmark
@@ -489,10 +489,10 @@ if test "$setup_packages" = "1"; then
     # gnu_sed    -- GNU sed, needed for -E and -i.bak in bench.sh result parsing
     # dos2unix   -- needed to patch shbench source files
     echo ""
-    echo "> pkgman install -y gcc llvm12_clang cmake ninja python3 automake libtool autoconf git wget dos2unix bc gmp_devel gnu_sed coreutils ruby libatomic_ops_devel time snappy_devel readline_devel"
+    echo "> pkgman install -y gcc llvm12_clang cmake ninja python3.14 automake libtool autoconf git wget dos2unix bc gmp_devel sed coreutils ruby libatomic_ops_devel time snappy_devel readline_devel"
     echo ""
-    pkgman install -y gcc llvm12_clang cmake ninja python3 automake libtool autoconf \
-      git wget dos2unix bc gmp_devel gnu_sed coreutils \
+    pkgman install -y gcc llvm12_clang cmake ninja python3.14 automake libtool autoconf \
+      git wget dos2unix bc gmp_devel sed coreutils \
       ruby libatomic_ops_devel time \
       snappy_devel readline_devel
     haikuinstallbazel
