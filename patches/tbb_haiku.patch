@@ -1,0 +1,26 @@
+diff --git a/include/oneapi/tbb/detail/_export.h b/include/oneapi/tbb/detail/_export.h
+index 4c015223..8094254b 100644
+--- a/include/oneapi/tbb/detail/_export.h
++++ b/include/oneapi/tbb/detail/_export.h
+@@ -19,7 +19,7 @@
+
+ #if defined(__MINGW32__)
+     #define _EXPORT __declspec(dllexport)
+-#elif defined(_WIN32) || defined(__unix__) || defined(__APPLE__) // Use .def files for these
++#elif defined(_WIN32) || defined(__unix__) || defined(__APPLE__) || defined(__HAIKU__) // Use .def files for these
+     #define _EXPORT
+ #else
+     #error "Unknown platform/compiler"
+diff --git a/src/tbbmalloc/frontend.cpp b/src/tbbmalloc/frontend.cpp
+index e32c240c..352f785c 100644
+--- a/src/tbbmalloc/frontend.cpp
++++ b/src/tbbmalloc/frontend.cpp
+@@ -772,7 +772,7 @@ static inline unsigned int highestBitPos(unsigned int n)
+     unsigned int pos;
+ #if __ARCH_x86_32||__ARCH_x86_64
+
+-# if __unix__||__APPLE__||__MINGW32__
++# if __unix__||__APPLE__||__MINGW32__||__HAIKU__
+     __asm__ ("bsr %1,%0" : "=r"(pos) : "r"(n));
+ # elif (_WIN32 && (!_WIN64 || __INTEL_COMPILER))
+     __asm
