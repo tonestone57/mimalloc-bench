@@ -508,6 +508,7 @@ if test "$setup_packages" = "1"; then
     #   mesh/nomesh -- uses Linux mmap extensions
     #   tcg  -- requires Bazel (unavailable on Haiku)
     #   lp   -- uses pthread_getname_np (not on Haiku)
+  #   pa   -- requires cipd (unavailable on Haiku)
     echo "Haiku: packages installed."
   fi
 fi
@@ -526,6 +527,7 @@ if test "$haiku" = "1"; then
   setup_nomesh=0
   setup_tcg=0
   setup_lp=0
+  setup_pa=0
   setup_linux=0   # Linux kernel build -- not applicable on Haiku
   setup_redis=0   # Redis requires epoll/eventfd, not ported to Haiku
   setup_rocksdb=0 # RocksDB uses fallocate/sync_file_range, Linux-specific
