@@ -676,6 +676,8 @@ fi
 
 if test "$setup_tcg" = "1"; then
   checkout tcg $version_tcg https://github.com/google/tcmalloc
+  # Fix bazel build with newer bazel/rules_cc (add load statement)
+  sed -i '1s/^/load("@rules_cc\/\/cc:defs.bzl", "cc_library")\n/' tcmalloc/BUILD
   bazel build -c opt tcmalloc
   popd
 fi
