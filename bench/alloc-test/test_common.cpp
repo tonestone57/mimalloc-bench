@@ -121,6 +121,14 @@ size_t getRss() {
   getrusage(RUSAGE_SELF, &rusage);
 	return rusage.ru_maxrss;
 }
+#elif defined(__HAIKU__)
+#include <unistd.h>
+size_t getRss()
+{
+	struct rusage rusage;
+	getrusage(RUSAGE_SELF, &rusage);
+	return rusage.ru_maxrss;
+}
 #else
 size_t getRss()
 {

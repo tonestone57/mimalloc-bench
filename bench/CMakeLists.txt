@@ -2,6 +2,11 @@ cmake_minimum_required(VERSION 3.5)
 project(mimalloc-bench CXX C)
 set(CMAKE_CXX_STANDARD 17)
 
+# Detect Haiku
+if(CMAKE_SYSTEM_NAME STREQUAL "Haiku")
+  set(HAIKU ON)
+endif()
+
 if (NOT CMAKE_BUILD_TYPE)
   message(STATUS "No build type selected, default to *** Release ***")
   set(CMAKE_BUILD_TYPE "Release")
@@ -56,7 +61,17 @@ target_link_libraries(espresso m)
 
 add_executable(barnes ${barnes_sources})
 target_compile_options(barnes PRIVATE $<$<C_COMPILER_ID:GNU>:-std=gnu89>)
-target_link_libraries(barnes m)
+# Haiku: math is part of libroot; -lm is not a separate library and
+# may produce a linker warning if specified explicitly.
+if(HAIKU)
+  target_link_libraries(barnes)
+else()
+  target_link_libraries(barnes m)
+endif()
+
+if(HAIKU)
+  add_compile_definitions(_REENTRANT)
+endif()
 
 add_executable(larson larson/larson.cpp)
 target_compile_options(larson PRIVATE -Wno-unused-result)
@@ -82,6 +97,10 @@ if(NOT APPLE)
   target_link_libraries(sh8bench pthread)
 endif()
 
+# Note: sh6bench and sh8bench build and run correctly on Haiku.
+# They use standard pthreads + sysconf(_SC_NPROCESSORS_ONLN),
+# both fully supported by Haiku's libroot. No Haiku exclusion needed.
+
 add_executable(cache-scratch cache-scratch/cache-scratch.cpp)
 target_link_libraries(cache-scratch pthread)
 
@@ -106,7 +125,12 @@ target_link_libraries(mleak pthread)
 add_executable(rptest rptest/rptest.c rptest/thread.c rptest/timer.c)
 target_compile_options(rptest PRIVATE -fpermissive)
 target_include_directories(rptest PRIVATE rptest)
-target_link_libraries(rptest pthread m)
+# Haiku: math is in libroot; no separate -lm needed
+if(HAIKU)
+  target_link_libraries(rptest pthread)
+else()
+  target_link_libraries(rptest pthread m)
+endif()
 
 add_executable(glibc-simple glibc-bench/bench-malloc-simple.c)
 target_link_libraries(glibc-simple pthread)

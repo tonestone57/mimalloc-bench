@@ -14,6 +14,14 @@ case "$OSTYPE" in
     darwin="1"
     extso=".dylib"
     procs=`sysctl -n hw.physicalcpu`;;
+  haiku*)
+    haiku="1"
+    # Haiku uses .so, same as Linux
+    if command -v nproc > /dev/null; then
+      procs=`nproc`
+    elif command -v sysctl > /dev/null; then
+      procs=`sysctl -n hw.ncpu 2>/dev/null || echo 8`
+    fi;;
   *)
     darwin=""
     if command -v nproc > /dev/null; then 
@@ -24,6 +32,12 @@ esac
 SUDO=sudo
 if [ "$EUID" -eq 0 ]; then
   echo "[*] $0 is running as root, avoid doing this if possible."
+  SUDO=""
+fi
+
+# On Haiku, sudo may not be installed by default; fall back to running
+# package management commands directly (pkgman does not require sudo).
+if test "$haiku" = "1"; then
   SUDO=""
 fi
 
@@ -403,6 +417,17 @@ function brewinstall {
   brew install $1
 }
 
+function pkgmaninstall {
+  echo ""
+  echo "> pkgman install -y $1"
+  echo ""
+  pkgman install -y $1
+}
+
+function haikuinstallbazel {
+  echo "NOTE: Bazel is not readily available for Haiku; tcg (Google tcmalloc) will be skipped."
+}
+
 function aptinstallbazel {
   echo ""
   echo "> installing bazel"
@@ -464,7 +489,48 @@ if test "$setup_packages" = "1"; then
       ghostscript bazelisk gflags snappy"
   elif grep -q 'Arch Linux' /etc/os-release; then
     sudo pacman -S dos2unix wget cmake ninja automake libtool time gmp sed ghostscript bazelisk gflags snappy
+  elif test "$haiku" = "1"; then
+    # ruby_x86   -- needed for rbstress benchmark
+    # time_x86   -- GNU time, needed for -f format string in bench.sh
+    # gnu_sed    -- GNU sed, needed for -E and -i.bak in bench.sh result parsing
+    # dos2unix   -- needed to patch shbench source files
+    pkgmaninstall "gcc_x86 clang cmake ninja_x86 python3 automake libtool autoconf \
+      git wget dos2unix bc gmp_x86_devel gnu_sed coreutils_x86 \
+      ruby_x86 libatomic_ops_x86_devel time_x86 \
+      snappy_x86_devel readline_x86_devel"
+    haikuinstallbazel
+    # Allocators not expected to build on Haiku:
+    #   dh   -- uses __malloc_hook (glibc internal)
+    #   fg   -- uses execinfo.h (GNU extension)
+    #   gd   -- glibc-specific internals
+    #   hd   -- glibc-specific internals
+    #   lt   -- uses mallinfo (glibc)
+    #   sm   -- uses MADV_HUGEPAGE (Linux-specific)
+    #   scudo -- uses sys/auxv.h (Linux-specific)
+    #   mesh/nomesh -- uses Linux mmap extensions
+    #   tcg  -- requires Bazel (unavailable on Haiku)
+    #   lp   -- uses pthread_getname_np (not on Haiku)
+    echo "Haiku: packages installed."
   fi
+fi
+
+# Disable allocators that require Linux/glibc-specific APIs on Haiku.
+if test "$haiku" = "1"; then
+  setup_dh=0
+  setup_fg=0
+  setup_gd=0
+  setup_hd=0
+  setup_lt=0
+  setup_sm=0
+  setup_scudo=0
+  setup_mesh=0
+  setup_nomesh=0
+  setup_tcg=0
+  setup_lp=0
+  setup_linux=0   # Linux kernel build -- not applicable on Haiku
+  setup_redis=0   # Redis requires epoll/eventfd, not ported to Haiku
+  setup_rocksdb=0 # RocksDB uses fallocate/sync_file_range, Linux-specific
+  # rbstress, sh6bench, sh8bench all work on Haiku; no overrides needed.
 fi
 
 if test "$setup_hm" = "1"; then
