@@ -23,6 +23,7 @@ readonly tests_allt="$tests_all1 $tests_all2"  # run with 'allt' command option
 tests_run=""
 tests_exclude=""
 readonly tests_exclude_macos="sh6bench sh8bench redis"
+readonly tests_exclude_haiku="redis linux rocksdb"
 
 # --------------------------------------------------------------------
 # benchmark versions
@@ -41,6 +42,7 @@ ldpreload="LD_PRELOAD"
 timecmd="$(type -P time)"  # the shell builtin doesn't have all the options we need
 sedcmd=sed
 darwin=""
+haiku=""
 extso=".so"
 procs=8
 repeats=1          # repeats of all tests
@@ -55,6 +57,33 @@ case "$OSTYPE" in
     libc=`clang --version | head -n 1`
     procs=`sysctl -n hw.physicalcpu`
     sedcmd=gsed;;
+  haiku*)
+    haiku="1"
+    # Haiku supports LD_PRELOAD natively (same variable name as Linux)
+    ldpreload="LD_PRELOAD"
+    extso=".so"
+    # Use GNU time for full -f format string support.
+    # Install via: pkgman install time_x86
+    if command -v gtime > /dev/null 2>&1; then
+      timecmd=gtime
+    elif [ -x /bin/time ] && /bin/time --version 2>&1 | grep -q GNU; then
+      timecmd=/bin/time
+    else
+      echo "warning: GNU time not found; install via: pkgman install time_x86"
+      echo "         Benchmark timing output will be incomplete."
+      timecmd="$(type -P time)"
+    fi
+    # GNU sed needed for -E -i.bak used in result post-processing.
+    # Install via: pkgman install gnu_sed
+    if command -v gsed > /dev/null 2>&1; then
+      sedcmd=gsed
+    fi
+    libc="Haiku libroot"
+    if command -v nproc > /dev/null 2>&1; then
+      procs=`nproc`
+    elif command -v sysctl > /dev/null 2>&1; then
+      procs=`sysctl -n hw.ncpu 2>/dev/null || echo 8`
+    fi;;
   *)
     libc=`ldd --version 2>&1 | head -n 1` || true
     libc="${libc#ldd }"
@@ -292,6 +321,15 @@ function read_external_allocators_from_file { # file
 if test "$darwin" = "1"; then
   # remove tests that don't run on darwin
   tests_exclude="$tests_exclude $tests_exclude_macos"
+fi
+
+if test "$haiku" = "1"; then
+  # redis: uses epoll/eventfd/signalfd, not ported to Haiku
+  # linux: builds the Linux kernel source tree, not applicable on Haiku
+  # rocksdb: uses fallocate/sync_file_range/sendfile, Linux-specific
+  # sh6bench, sh8bench: use standard pthreads + sysconf, work on Haiku
+  # rbstress: pure Ruby script, works on Haiku with ruby_x86 installed
+  tests_exclude="$tests_exclude $tests_exclude_haiku"
 fi
 
 
