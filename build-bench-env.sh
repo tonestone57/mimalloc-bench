@@ -518,7 +518,7 @@ if test "$haiku" = "1"; then
   setup_fg=0
   setup_gd=0
   setup_hd=0
-  setup_hm=0
+  # setup_hm=0
   setup_lt=0
   setup_sm=0
   setup_scudo=0
@@ -534,6 +534,9 @@ fi
 
 if test "$setup_hm" = "1"; then
   checkout hm $version_hm https://github.com/GrapheneOS/hardened_malloc
+  if test "$haiku" = "1"; then
+    patch -p1 < ../../patches/hardened_malloc_haiku.patch
+  fi
   make CONFIG_NATIVE=true CONFIG_WERROR=false VARIANT=light -j $proc
   make CONFIG_NATIVE=true CONFIG_WERROR=false VARIANT=default -j $proc
   popd
