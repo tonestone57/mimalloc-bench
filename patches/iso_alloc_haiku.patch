@@ -1,0 +1,22 @@
+diff --git a/src/iso_alloc_random.c b/src/iso_alloc_random.c
+index 408c92b..e3a50b5 100644
+--- a/src/iso_alloc_random.c
++++ b/src/iso_alloc_random.c
+@@ -15,7 +15,7 @@
+ #include <Security/SecRandom.h>
+ #elif __FreeBSD__ || __DragonFly__ || __linux__ || __ANDROID__
+ #include <sys/random.h>
+-#elif __NetBSD__
++#elif __NetBSD__ || __HAIKU__
+ #include <stdlib.h>
+ #elif __sun
+ #include <sys/random.h>
+@@ -59,7 +59,7 @@ INTERNAL_HIDDEN INLINE uint64_t rand_uint64(void) {
+     ret = SecRandomCopyBytes(kSecRandomDefault, sizeof(val), &val);
+ #elif __FreeBSD__ || __DragonFly__ || __linux__ || __ANDROID__ || __sun
+     ret = getrandom(&val, sizeof(val), GRND_NONBLOCK) != sizeof(val);
+-#elif __NetBSD__
++#elif __NetBSD__ || __HAIKU__
+     /* Temporary solution until NetBSD 10 released with getrandom support */
+     arc4random_buf(&val, sizeof(val));
+ #endif

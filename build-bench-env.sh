@@ -554,6 +554,9 @@ fi
 
 if test "$setup_iso" = "1"; then
   checkout iso $version_iso https://github.com/struct/isoalloc
+  if test "$haiku" = "1"; then
+    patch -p1 < ../../patches/iso_alloc_haiku.patch
+  fi
   make library -j $procs
   popd
 fi
