@@ -29,15 +29,15 @@ case "$OSTYPE" in
     fi;;
 esac
 
-# On Haiku, sudo may not be installed by default; fall back to running
-# package management commands directly (pkgman does not require sudo).
-if test "$haiku" = "1"; then
-  SUDO=""
-fi
-
 SUDO=sudo
 if [ "$EUID" -eq 0 ]; then
   echo "[*] $0 is running as root, avoid doing this if possible."
+  SUDO=""
+fi
+
+# On Haiku, sudo may not be installed by default; fall back to running
+# package management commands directly (pkgman does not require sudo).
+if test "$haiku" = "1"; then
   SUDO=""
 fi
 
