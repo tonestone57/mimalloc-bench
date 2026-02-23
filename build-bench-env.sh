@@ -668,7 +668,7 @@ if test "$setup_tbb" = "1"; then
   if test "$haiku" = "1"; then
     patch -p1 < ../../patches/tbb_haiku.patch
   fi
-  cmake -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_BUILD_TYPE=Release -DTBB_BUILD=OFF -DTBB_TEST=OFF -DTBB_OUTPUT_DIR_BASE=bench .
+  cmake -DCMAKE_POLICY_VERSION_MINIMUM=3.10 -DCMAKE_BUILD_TYPE=Release -DTBB_BUILD=OFF -DTBB_TEST=OFF -DTBB_OUTPUT_DIR_BASE=bench .
   make -j $procs
   popd
 fi
