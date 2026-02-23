@@ -156,7 +156,7 @@ while : ; do
         setup_lp=$flag_arg
         setup_mi=$flag_arg
         setup_mi2=$flag_arg
-        setup_pa=$flag_arg
+        setup_pa=0  # Currently broken upstream due to missing third_party dependencies
         setup_sn=$flag_arg
         setup_sg=$flag_arg
         setup_tbb=$flag_arg
@@ -484,7 +484,7 @@ if test "$setup_packages" = "1"; then
     brewinstall "dos2unix wget cmake ninja automake libtool gnu-time gmp mpir gnu-sed \
       ghostscript bazelisk gflags snappy"
   elif grep -q 'Arch Linux' /etc/os-release 2>/dev/null; then
-    sudo pacman -S dos2unix wget cmake ninja automake libtool time gmp sed ghostscript bazelisk gflags snappy
+    $SUDO pacman -S dos2unix wget cmake ninja automake libtool time gmp sed ghostscript bazelisk gflags snappy
   elif test "$haiku" = "1"; then
     # ruby       -- needed for rbstress benchmark
     # time       -- GNU time, needed for -f format string in bench.sh
@@ -866,6 +866,10 @@ if test "$setup_rocksdb" = "1"; then
   phase "build rocksdb $version_rocksdb"
 
   pushd "$devdir"
+  if test -d "rocksdb-$version_rocksdb" && test ! -d "rocksdb-$version_rocksdb/include"; then
+    echo "$devdir/rocksdb-$version_rocksdb exists but is incomplete; removing it"
+    rm -rf "rocksdb-$version_rocksdb"
+  fi
   if test -d "rocksdb-$version_rocksdb"; then
     echo "$devdir/rocksdb-$version_rocksdb already exists; no need to download it"
   else
