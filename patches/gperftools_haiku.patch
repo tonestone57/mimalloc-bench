@@ -1,0 +1,19 @@
+--- src/tests/proc_maps_iterator_test.cc
++++ src/tests/proc_maps_iterator_test.cc
+@@ -69,6 +69,16 @@
+
+ #ifdef PRINT_DL_PHDRS
+
++#ifndef PF_R
++#define PF_R 0x4
++#endif
++#ifndef PF_W
++#define PF_W 0x2
++#endif
++#ifndef PF_X
++#define PF_X 0x1
++#endif
++
+ std::string MapFlags(uintptr_t flags) {
+   std::string ret;
+   ret += (flags & PF_R) ? "r" : "-";
