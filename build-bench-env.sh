@@ -890,6 +890,7 @@ fi
 if test "$setup_lean" = "1"; then
   phase "build lean $version_lean"
   checkout lean $version_lean https://github.com/leanprover-community/lean
+  patch -p1 < ../../patches/lean_alpine.patch
   mkdir -p out/release
   cd out/release
   env CC=gcc CXX="g++" cmake -DCMAKE_POLICY_VERSION_MINIMUM=3.5 ../../src -DCUSTOM_ALLOCATORS=OFF -DLEAN_EXTRA_CXX_FLAGS="-w"
