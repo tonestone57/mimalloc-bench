@@ -29,7 +29,7 @@ diff --git a/src/tbbmalloc/tbbmalloc.cpp b/src/tbbmalloc/tbbmalloc.cpp
 index 7311107c..44d4719c 100644
 --- a/src/tbbmalloc/tbbmalloc.cpp
 +++ b/src/tbbmalloc/tbbmalloc.cpp
-@@ -43,7 +43,7 @@
+@@ -43,6 +43,6 @@
  #elif __APPLE__
  #define MALLOCLIB_NAME "libtbbmalloc" DEBUG_SUFFIX ".dylib"
 -#elif __FreeBSD__ || __NetBSD__ || __OpenBSD__ || __sun || _AIX || __ANDROID__
