@@ -375,6 +375,7 @@ function checkout {  # name, git-tag, git repo, options
     git clone $4 $3 $1
   fi
   cd "$1"
+  git reset --hard HEAD
   git checkout $2
   write_version $1 $2 $3
 }
