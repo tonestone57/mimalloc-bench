@@ -2,12 +2,13 @@ diff --git a/include/oneapi/tbb/detail/_export.h b/include/oneapi/tbb/detail/_ex
 index 4c015223..8094254b 100644
 --- a/include/oneapi/tbb/detail/_export.h
 +++ b/include/oneapi/tbb/detail/_export.h
-@@ -19,7 +19,7 @@
+@@ -19,7 +19,8 @@
 
  #if defined(__MINGW32__)
      #define _EXPORT __declspec(dllexport)
 -#elif defined(_WIN32) || defined(__unix__) || defined(__APPLE__) // Use .def files for these
 +#elif defined(_WIN32) || defined(__unix__) || defined(__APPLE__) || defined(__HAIKU__) // Use .def files for these
++    #undef _EXPORT
      #define _EXPORT
  #else
      #error "Unknown platform/compiler"
