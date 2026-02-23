@@ -605,7 +605,7 @@ function run_test_env_cmd { # <test name> <allocator name> <environment args> <c
   case "$1" in
     redis*)
        echo "start server"
-       $timecmd -a -o "$benchres.line" -f "$1${benchfill:${#1}} $2${allocfill:${#2}} %E %M %U %S %F %R" /bin/env $3 $redis_dir/redis-server > "$outfile.server.txt"  &
+       $timecmd -a -o "$benchres.line" -f "$1${benchfill:${#1}} $2${allocfill:${#2}} %E %M %U %S %F %R" env $3 $redis_dir/redis-server > "$outfile.server.txt"  &
        sleep 1s
        $redis_dir/redis-cli flushall
        sleep 1s
@@ -626,7 +626,7 @@ function run_test_env_cmd { # <test name> <allocator name> <environment args> <c
             continue
           fi
           tmpfile="$1-$2-tmp.txt"
-          ((timeout 1s bash -c "/bin/env $3 ./$binary || echo CRASHED") || echo TIMEOUT)  2>/dev/null > "$tmpfile"
+          ((timeout 1s bash -c "env $3 ./$binary || echo CRASHED") || echo TIMEOUT)  2>/dev/null > "$tmpfile"
           if grep --text -q 'NOT_CAUGHT' "$tmpfile"; then
             if grep --text -q 'CRASHED' "$tmpfile"; then
               echo   "[late crash]   $binary" >> "$outfile"
@@ -648,7 +648,7 @@ function run_test_env_cmd { # <test name> <allocator name> <environment args> <c
        done
        ;;
     *)
-       $timecmd -a -o "$benchres.line" -f "$1${benchfill:${#1}} $2${allocfill:${#2}} %E %M %U %S %F %R" /bin/env $3 $4 < "$infile" > "$outfile";;
+       $timecmd -a -o "$benchres.line" -f "$1${benchfill:${#1}} $2${allocfill:${#2}} %E %M %U %S %F %R" env $3 $4 < "$infile" > "$outfile";;
   esac
 
   # fixup larson with relative time
