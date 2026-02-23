@@ -259,7 +259,12 @@ extern VOID_HACK sleep();
 #define LONG_MAX	((long int) (ULONG_MAX >> 1))
 #endif
 
+#ifdef __HAIKU__
+#define SHELL_PATH "/bin/sh"
+#else
+#define SHELL_PATH "/usr/bin/env sh"
+#endif
+
 #endif
 
 #endif /* PORT_H */
-

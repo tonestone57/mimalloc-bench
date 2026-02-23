@@ -48,6 +48,7 @@ procs=8
 repeats=1          # repeats of all tests
 test_repeats=1     # repeats per test
 sleep=0            # mini sleeps between tests seem to improve stability
+env_cmd="env"
 case "$OSTYPE" in
   darwin*) 
     darwin="1"
@@ -58,6 +59,7 @@ case "$OSTYPE" in
     procs=`sysctl -n hw.physicalcpu`
     sedcmd=gsed;;
   haiku*)
+    env_cmd="/bin/env"
     haiku="1"
     # Haiku supports LD_PRELOAD natively (same variable name as Linux)
     ldpreload="LD_PRELOAD"
@@ -605,7 +607,7 @@ function run_test_env_cmd { # <test name> <allocator name> <environment args> <c
   case "$1" in
     redis*)
        echo "start server"
-       $timecmd -a -o "$benchres.line" -f "$1${benchfill:${#1}} $2${allocfill:${#2}} %E %M %U %S %F %R" env $3 $redis_dir/redis-server > "$outfile.server.txt"  &
+       $timecmd -a -o "$benchres.line" -f "$1${benchfill:${#1}} $2${allocfill:${#2}} %E %M %U %S %F %R" $env_cmd $3 $redis_dir/redis-server > "$outfile.server.txt"  &
        sleep 1s
        $redis_dir/redis-cli flushall
        sleep 1s
@@ -626,7 +628,7 @@ function run_test_env_cmd { # <test name> <allocator name> <environment args> <c
             continue
           fi
           tmpfile="$1-$2-tmp.txt"
-          ((timeout 1s bash -c "env $3 ./$binary || echo CRASHED") || echo TIMEOUT)  2>/dev/null > "$tmpfile"
+          ((timeout 1s bash -c "$env_cmd $3 ./$binary || echo CRASHED") || echo TIMEOUT)  2>/dev/null > "$tmpfile"
           if grep --text -q 'NOT_CAUGHT' "$tmpfile"; then
             if grep --text -q 'CRASHED' "$tmpfile"; then
               echo   "[late crash]   $binary" >> "$outfile"
@@ -648,7 +650,7 @@ function run_test_env_cmd { # <test name> <allocator name> <environment args> <c
        done
        ;;
     *)
-       $timecmd -a -o "$benchres.line" -f "$1${benchfill:${#1}} $2${allocfill:${#2}} %E %M %U %S %F %R" env $3 $4 < "$infile" > "$outfile";;
+       $timecmd -a -o "$benchres.line" -f "$1${benchfill:${#1}} $2${allocfill:${#2}} %E %M %U %S %F %R" $env_cmd $3 $4 < "$infile" > "$outfile";;
   esac
 
   # fixup larson with relative time
