@@ -1,6 +1,6 @@
---- sh6bench.c	2026-02-22 21:39:54.759913318 +0000
-+++ sh6bench-new.c	2026-02-22 21:42:55.503911283 +0000
-@@ -50,7 +50,7 @@
+--- sh6bench.c	2026-02-22 21:57:48.902098540 +0000
++++ sh6bench-new.c	2026-02-23 07:38:22.992362178 +0000
+@@ -50,15 +50,20 @@
  #endif /* SYS_MULTI_THREAD */
 
  #elif defined(UNIX) || defined(__hpux) || defined(_AIX) || defined(__sun) \
@@ -9,7 +9,12 @@
  /* Unix prototypes */
  #ifndef UNIX
  #define UNIX 1
-@@ -58,7 +58,7 @@
+ #endif
++#ifdef __HAIKU__
++#define HAVE_PTHREAD 1
++#endif
++#ifndef UNIX
++#endif
  #include <unistd.h>
  #ifdef SYS_MULTI_THREAD
  #if defined(__hpux) || defined(__osf__) || defined(_AIX) || defined(sgi) \
@@ -18,7 +23,7 @@
  #define _INCLUDE_POSIX_SOURCE
  #include <sys/signal.h>
  #include <pthread.h>
-@@ -110,7 +110,7 @@
+@@ -110,7 +115,7 @@
  /* Note: the SmartHeap header files must be included _after_ any files that
   * declare malloc et al
   */
@@ -27,7 +32,7 @@
  #ifdef MALLOC_ONLY
  #undef malloc
  #undef realloc
-@@ -152,7 +152,7 @@
+@@ -152,7 +157,7 @@
  FILE *fout, *fin;
  unsigned uMaxBlockSize = 1000;
  unsigned uMinBlockSize = 1;
@@ -36,7 +41,7 @@
 
  unsigned long promptAndRead(char *msg, unsigned long defaultVal, char fmtCh);
 
-@@ -195,7 +195,16 @@
+@@ -195,7 +200,16 @@
  #endif
 
 	setbuf(stdout, NULL);  /* turn off buffering for output */
@@ -54,7 +59,7 @@
 	if (argc > 1)
 		fin = fopen(argv[1], "r");
 	else
-@@ -203,7 +212,8 @@
+@@ -203,7 +217,8 @@
 	if (argc > 2)
 		fout = fopen(argv[2], "w");
 	else
@@ -64,7 +69,7 @@
 
 	ulCallCount = promptAndRead("call count", ulCallCount, 'u');
 	uMinBlockSize = (unsigned)promptAndRead("min block size",uMinBlockSize,'u');
-@@ -220,7 +230,7 @@
+@@ -220,7 +235,7 @@
 		ThreadID *tids;
 
  #ifdef WIN32
@@ -73,7 +78,7 @@
 
 		if (uCPUs)
 		{
-@@ -253,10 +263,17 @@
+@@ -253,10 +268,17 @@
 		}
  #endif /* WIN32 */
 
@@ -92,7 +97,7 @@
 		ulCallCount /= uThreadCount;
 		if ((tids = malloc(sizeof(ThreadID) * uThreadCount)) != NULL)
 		{
-@@ -275,6 +292,7 @@
+@@ -275,6 +297,7 @@
 		if (threadArg)
 			free(threadArg);
 	}
@@ -100,7 +105,7 @@
  #else
 	startCPU = clock();
 	startTime = time(NULL);
-@@ -299,6 +317,7 @@
+@@ -299,6 +322,7 @@
 		fclose(fin);
 	if (fout != stdout)
 		fclose(fout);
@@ -108,7 +113,7 @@
  }
 
  void doBench(void *arg)
-@@ -339,6 +358,7 @@
+@@ -339,6 +363,7 @@
 					printf("Out of memory\n");
 					_exit (1);
 				}
@@ -116,7 +121,7 @@
 
 	  /* while allocating skip over that portion of the buffer that still
 	     holds pointers from the previous cycle
-@@ -387,6 +407,7 @@
+@@ -387,6 +412,7 @@
  {
 	char *arg = NULL, *err;
 	unsigned long result;
@@ -124,7 +129,7 @@
 	{
 		char buf[12];
 		static char fmt[] = "\n%s [%lu]: ";
-@@ -395,6 +416,7 @@
+@@ -395,6 +421,7 @@
 		if (fgets(buf, 11, fin))
 			arg = &buf[0];
 	}
@@ -132,7 +137,7 @@
 	if (arg && ((result = strtoul(arg, &err, 10)) != 0
 					|| (*err == '\n' && arg != err)))
 	{
-@@ -429,7 +451,7 @@
+@@ -429,7 +456,7 @@
 							 (pthread_startroutine_t)fn, arg) == -1)
 		 return THREAD_NULL;
 
@@ -141,7 +146,7 @@
 	pthread_attr_t attr;
 	pthread_attr_init(&attr);
  #ifdef _AIX
-@@ -462,7 +484,7 @@
+@@ -462,7 +489,7 @@
 	while (tidCnt--)
 		thr_join(0, NULL, NULL);
 
@@ -150,7 +155,7 @@
 	while (tidCnt--)
 		pthread_join(tids[tidCnt], NULL);
 
-@@ -509,6 +531,8 @@
+@@ -509,6 +536,8 @@
 	return get_nprocs();
  #elif defined(_SC_NPROCESSORS_ONLN)
 	return sysconf(_SC_NPROCESSORS_ONLN);

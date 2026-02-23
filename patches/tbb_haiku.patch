@@ -24,3 +24,15 @@ index e32c240c..352f785c 100644
      __asm__ ("bsr %1,%0" : "=r"(pos) : "r"(n));
  # elif (_WIN32 && (!_WIN64 || __INTEL_COMPILER))
      __asm
+diff --git a/src/tbbmalloc/tbbmalloc.cpp b/src/tbbmalloc/tbbmalloc.cpp
+index 7311107c..44d4719c 100644
+--- a/src/tbbmalloc/tbbmalloc.cpp
++++ b/src/tbbmalloc/tbbmalloc.cpp
+@@ -43,7 +43,7 @@
+ #elif __APPLE__
+ #define MALLOCLIB_NAME "libtbbmalloc" DEBUG_SUFFIX ".dylib"
+-#elif __FreeBSD__ || __NetBSD__ || __OpenBSD__ || __sun || _AIX || __ANDROID__
++#elif __FreeBSD__ || __NetBSD__ || __OpenBSD__ || __sun || _AIX || __ANDROID__ || defined(__HAIKU__)
+ #define MALLOCLIB_NAME "libtbbmalloc" DEBUG_SUFFIX ".so"
+ #elif __unix__
+ #define MALLOCLIB_NAME "libtbbmalloc" DEBUG_SUFFIX  __TBB_STRING(.so.2)
