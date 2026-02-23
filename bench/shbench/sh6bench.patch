@@ -1,5 +1,5 @@
---- sh6bench.c	2026-02-22 21:57:48.902098540 +0000
-+++ sh6bench-new.c	2026-02-23 07:38:22.992362178 +0000
+--- sh6bench.c	2026-02-23 08:15:42.330279030 +0000
++++ sh6bench-new.c	2026-02-23 08:15:42.334279030 +0000
 @@ -50,15 +50,20 @@
  #endif /* SYS_MULTI_THREAD */
 
@@ -41,11 +41,10 @@
 
  unsigned long promptAndRead(char *msg, unsigned long defaultVal, char fmtCh);
 
-@@ -195,7 +200,16 @@
+@@ -195,6 +200,16 @@
  #endif
 
 	setbuf(stdout, NULL);  /* turn off buffering for output */
--
 +#ifdef BENCH
 +	fin = stdin;
 +	fout = stdout;
@@ -56,20 +55,18 @@
 +		if (l > 0) defaultThreadCount = l;
 +	}
 +#else
+
 	if (argc > 1)
 		fin = fopen(argv[1], "r");
-	else
-@@ -203,7 +217,8 @@
-	if (argc > 2)
+@@ -204,6 +219,7 @@
 		fout = fopen(argv[2], "w");
 	else
--		fout = stdout;
-+		fout = stdout;
+		fout = stdout;
 +#endif
 
 	ulCallCount = promptAndRead("call count", ulCallCount, 'u');
 	uMinBlockSize = (unsigned)promptAndRead("min block size",uMinBlockSize,'u');
-@@ -220,7 +235,7 @@
+@@ -220,7 +236,7 @@
 		ThreadID *tids;
 
  #ifdef WIN32
@@ -78,7 +75,7 @@
 
 		if (uCPUs)
 		{
-@@ -253,10 +268,17 @@
+@@ -253,10 +269,17 @@
 		}
  #endif /* WIN32 */
 
@@ -97,15 +94,16 @@
 		ulCallCount /= uThreadCount;
 		if ((tids = malloc(sizeof(ThreadID) * uThreadCount)) != NULL)
 		{
-@@ -275,6 +297,7 @@
+@@ -275,6 +298,8 @@
 		if (threadArg)
 			free(threadArg);
 	}
 +	}
++	}
  #else
 	startCPU = clock();
 	startTime = time(NULL);
-@@ -299,6 +322,7 @@
+@@ -299,6 +324,7 @@
 		fclose(fin);
 	if (fout != stdout)
 		fclose(fout);
@@ -113,7 +111,7 @@
  }
 
  void doBench(void *arg)
-@@ -339,6 +363,7 @@
+@@ -339,6 +365,7 @@
 					printf("Out of memory\n");
 					_exit (1);
 				}
@@ -121,15 +119,15 @@
 
 	  /* while allocating skip over that portion of the buffer that still
 	     holds pointers from the previous cycle
-@@ -387,6 +412,7 @@
- {
+@@ -388,6 +415,7 @@
 	char *arg = NULL, *err;
 	unsigned long result;
-+#ifndef BENCH
 	{
++#ifndef BENCH
 		char buf[12];
 		static char fmt[] = "\n%s [%lu]: ";
-@@ -395,6 +421,7 @@
+		fmt[7] = fmtCh;
+@@ -395,6 +423,7 @@
 		if (fgets(buf, 11, fin))
 			arg = &buf[0];
 	}
@@ -137,7 +135,7 @@
 	if (arg && ((result = strtoul(arg, &err, 10)) != 0
 					|| (*err == '\n' && arg != err)))
 	{
-@@ -429,7 +456,7 @@
+@@ -429,7 +458,7 @@
 							 (pthread_startroutine_t)fn, arg) == -1)
 		 return THREAD_NULL;
 
@@ -146,7 +144,7 @@
 	pthread_attr_t attr;
 	pthread_attr_init(&attr);
  #ifdef _AIX
-@@ -462,7 +489,7 @@
+@@ -462,7 +491,7 @@
 	while (tidCnt--)
 		thr_join(0, NULL, NULL);
 
@@ -155,7 +153,7 @@
 	while (tidCnt--)
 		pthread_join(tids[tidCnt], NULL);
 
-@@ -509,6 +536,8 @@
+@@ -509,6 +538,8 @@
 	return get_nprocs();
  #elif defined(_SC_NPROCESSORS_ONLN)
 	return sysconf(_SC_NPROCESSORS_ONLN);
