@@ -462,14 +462,14 @@ if test "$setup_packages" = "1"; then
     # no 'apt update' equivalent needed on Fedora
     dnfinstall "gcc-c++ clang lld llvm-devel unzip dos2unix bc gmp-devel wget gawk \
       cmake python3 python3-six ruby ninja-build libtool autoconf git patch time sed \
-      ghostscript libatomic libstdc++ which gflags-devel xz readline-devel snappy-devel"
+      ghostscript z3 libatomic libstdc++ which gflags-devel xz readline-devel snappy-devel"
     # bazel5 is broken on the copr: https://github.com/bazelbuild/bazel/issues/19295
     #dnfinstallbazel
   elif grep -q -e 'ID=debian' -e 'ID=ubuntu' /etc/os-release 2>/dev/null; then
     echo "updating package database... ($SUDO apt update)"
     $SUDO apt update -qq
     aptinstall "build-essential git gpg g++ clang lld llvm-dev unzip dos2unix linuxinfo bc libgmp-dev wget \
-      cmake python3 python3-six ruby ninja-build libtool autoconf sed ghostscript time \
+      cmake python3 python3-six ruby ninja-build libtool autoconf sed ghostscript z3 time \
       curl automake libatomic1 libgflags-dev libsnappy-dev zlib1g-dev libbz2-dev \
       liblz4-dev libzstd-dev libreadline-dev pkg-config gawk util-linux"
     aptinstallbazel
@@ -478,25 +478,25 @@ if test "$setup_packages" = "1"; then
     apk update
     apkinstall "clang lld unzip dos2unix bc gmp-dev wget cmake python3 py3-six automake gawk \
       samurai libtool git build-base linux-headers autoconf util-linux sed \
-      ghostscript libatomic gflags-dev readline-dev snappy-dev"
+      ghostscript z3 libatomic gflags-dev readline-dev snappy-dev"
     apkinstall "bazel@testing"
   elif brew --version 2> /dev/null >/dev/null; then
     brewinstall "dos2unix wget cmake ninja automake libtool gnu-time gmp mpir gnu-sed \
       ghostscript bazelisk gflags snappy"
   elif grep -q 'Arch Linux' /etc/os-release 2>/dev/null; then
-    $SUDO pacman -S dos2unix wget cmake ninja automake libtool time gmp sed ghostscript bazelisk gflags snappy python-six
+    $SUDO pacman -S dos2unix wget cmake ninja automake libtool time gmp sed ghostscript z3 bazelisk gflags snappy python-six
   elif test "$haiku" = "1"; then
     # ruby       -- needed for rbstress benchmark
     # time       -- GNU time, needed for -f format string in bench.sh
     # gnu_sed    -- GNU sed, needed for -E and -i.bak in bench.sh result parsing
     # dos2unix   -- needed to patch shbench source files
     echo ""
-    echo "> pkgman install -y gcc llvm12_clang cmake ninja python3.14 automake libtool autoconf git wget dos2unix bc gmp_devel sed coreutils ruby libatomic_ops_devel time snappy_devel readline_devel"
+    echo "> pkgman install -y gcc llvm12_clang cmake ninja python3.14 automake libtool autoconf git wget dos2unix bc gmp_devel sed gnu_sed coreutils ruby libatomic_ops_devel time z3 ghostscript snappy_devel readline_devel"
     echo ""
     pkgman install -y gcc llvm12_clang cmake ninja python3.14 automake libtool autoconf \
-      git wget dos2unix bc gmp_devel sed coreutils \
-      ruby libatomic_ops_devel time \
-      snappy_devel readline_devel
+      git wget dos2unix bc gmp_devel sed gnu_sed coreutils \
+      ruby libatomic_ops_devel time z3 \
+      ghostscript snappy_devel readline_devel
     haikuinstallbazel
     # Allocators not expected to build on Haiku:
     #   dh   -- uses __malloc_hook (glibc internal)
