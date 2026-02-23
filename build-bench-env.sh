@@ -552,7 +552,11 @@ fi
 
 if test "$setup_gd" = "1"; then
   checkout gd $version_gd https://github.com/UTSASRG/Guarder
-  make -j $procs
+  if [ -z "$darwin" ] && [ -z "$haiku" ]; then
+    make CC=gcc CXX=g++ -j $procs
+  else
+    make -j $procs
+  fi
   popd
 fi
 
@@ -586,15 +590,29 @@ fi
 if test "$setup_scudo" = "1"; then
   partial_checkout scudo $version_scudo https://github.com/llvm/llvm-project "compiler-rt/lib/scudo/standalone"
   cd "compiler-rt/lib/scudo/standalone"
-  # TODO: make the next line prettier instead of hardcoding everything.
-  clang++ -flto -fuse-ld=lld -fPIC -std=c++17 -fno-exceptions $CXXFLAGS -fno-rtti -fvisibility=internal -msse4.2 -O3 -I include -shared -o libscudo$extso *.cpp -pthread
+  # Set compiler and flags based on platform
+  if [ -z "$darwin" ] && [ -z "$haiku" ]; then
+    SCUDO_CXX="g++"
+    SCUDO_LDFLAGS=""
+  else
+    SCUDO_CXX="clang++"
+    SCUDO_LDFLAGS="-fuse-ld=lld"
+  fi
+  # Build scudo library
+  $SCUDO_CXX -flto $SCUDO_LDFLAGS -fPIC -std=c++17 -fno-exceptions $CXXFLAGS \
+             -fno-rtti -fvisibility=internal -msse4.2 -O3 -I include \
+             -shared -o libscudo$extso *.cpp -pthread
   cd -
   popd
 fi
 
 if test "$setup_fg" = "1"; then
   checkout "fg" $version_fg https://github.com/UTSASRG/FreeGuard
-  make -j $procs SSE2RNG=1
+  if [ -z "$darwin" ] && [ -z "$haiku" ]; then
+    make CC=gcc CXX=g++ -j $procs SSE2RNG=1
+  else
+    make -j $procs SSE2RNG=1
+  fi
   popd
 fi
 
@@ -631,7 +649,7 @@ if test "$setup_pa" = "1"; then
 
   # Setup depot_tools for building
   if test -d depot_tools; then
-    echo "depot_tools alrady exist, no cloning"
+    echo "depot_tools already exist, no cloning"
   else
     git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git --depth=1
   fi
@@ -657,10 +675,8 @@ if test "$setup_dh" = "1"; then
   checkout dh $version_dh https://github.com/emeryberger/DieHard
   # remove all the historical useless junk
   rm -rf ./benchmarks/ ./src/archipelago/ ./src/build/ ./src/exterminator/ ./src/local/ ./src/original-diehard/ ./src/replicated/ ./docs
-  cd src
   cmake -S . -B build
-  cmake --build build -j `nproc`
-  cd ../..
+  cmake --build build -j $procs
   popd
 fi
 
@@ -691,8 +707,12 @@ fi
 
 if test "$setup_tcg" = "1"; then
   checkout tcg $version_tcg https://github.com/google/tcmalloc
-  # Fix bazel build with newer bazel/rules_cc (add load statement)
-  sed -i '1s/^/load("@rules_cc\/\/cc:defs.bzl", "cc_library")\n/' tcmalloc/BUILD
+  # Fix bazel build with newer bazel/rules_cc (add load statements)
+  find . -name BUILD -exec sed -i '1s/^/load("@rules_cc\/\/cc:defs.bzl", "cc_library", "cc_binary", "cc_test")\n/' {} +
+  sed -i '1s/^/load("@rules_cc\/\/cc:defs.bzl", "cc_library", "cc_binary", "cc_test")\n/' tcmalloc/variants.bzl
+  sed -i 's/native\.cc_library/cc_library/g' tcmalloc/variants.bzl
+  sed -i 's/native\.cc_binary/cc_binary/g' tcmalloc/variants.bzl
+  sed -i 's/native\.cc_test/cc_test/g' tcmalloc/variants.bzl
   bazel build -c opt tcmalloc
   popd
 fi
