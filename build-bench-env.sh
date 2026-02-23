@@ -42,6 +42,7 @@ if test "$haiku" = "1"; then
 fi
 
 SHA256SUM_CMD="sha256sum"
+PYTHON="python3"
 if test "$darwin" = "1"; then
   SHA256SUM_CMD="shasum -a 256"
 fi
@@ -381,7 +382,7 @@ function checkout {  # name, git-tag, git repo, options
 }
 
 function check_checksum {  # name, sha256sum
-  if (echo "$2  $1" | $SHA256SUM_CMD -c -s); then
+  if (echo "$2  $1" | $SHA256SUM_CMD -c >/dev/null 2>&1); then
     echo "$1 has correct checksum"
   else
     echo "$1 has wrong checksum"
@@ -490,9 +491,9 @@ if test "$setup_packages" = "1"; then
     # gnu_sed    -- GNU sed, needed for -E and -i.bak in bench.sh result parsing
     # dos2unix   -- needed to patch shbench source files
     echo ""
-    echo "> pkgman install -y gcc llvm12_clang cmake ninja python3.14 automake libtool autoconf git wget dos2unix bc gmp_devel sed coreutils ruby libatomic_ops_devel time snappy_devel readline_devel"
+    echo "> pkgman install -y gcc llvm12_clang cmake ninja python3 automake libtool autoconf git wget dos2unix bc gmp_devel sed coreutils ruby libatomic_ops_devel time snappy_devel readline_devel"
     echo ""
-    pkgman install -y gcc llvm12_clang cmake ninja python3.14 automake libtool autoconf \
+    pkgman install -y gcc llvm12_clang cmake ninja python3 automake libtool autoconf \
       git wget dos2unix bc gmp_devel sed coreutils \
       ruby libatomic_ops_devel time \
       snappy_devel readline_devel
@@ -541,8 +542,8 @@ if test "$setup_hm" = "1"; then
     patch -p1 < ../../patches/hardened_malloc_haiku.patch
     export LDLIBS="-lbsd"
   fi
-  make CONFIG_NATIVE=true CONFIG_WERROR=false VARIANT=light -j $proc
-  make CONFIG_NATIVE=true CONFIG_WERROR=false VARIANT=default -j $proc
+  make CONFIG_NATIVE=true CONFIG_WERROR=false VARIANT=light -j $procs
+  make CONFIG_NATIVE=true CONFIG_WERROR=false VARIANT=default -j $procs
   if test "$haiku" = "1"; then
     unset LDLIBS
   fi
@@ -723,7 +724,7 @@ if test "$setup_rp" = "1"; then
   if test -f build.ninja; then
     echo "$devdir/rpmalloc is already configured; no need to reconfigure"
   else
-    python3 configure.py
+    "$PYTHON" configure.py
   fi
   # fix build using clang-16
   # see https://github.com/mjansson/rpmalloc/issues/316
@@ -907,7 +908,8 @@ if test "$setup_bench" = "1"; then
     unzip -o bench.zip
     dos2unix sh6bench.patch
     dos2unix sh6bench.c
-    patch -p1 -o sh6bench-new.c sh6bench.c sh6bench.patch
+    rm -f sh6bench-new.c
+    patch -p1 -l -o sh6bench-new.c sh6bench.c sh6bench.patch
   fi
 
   if test -f sh8bench-new.c && [ "sh8bench.patch" -nt "sh8bench-new.c" ]; then
@@ -922,7 +924,8 @@ if test "$setup_bench" = "1"; then
     unzip -o SH8BENCH.zip
     dos2unix sh8bench.patch
     dos2unix SH8BENCH.C
-    patch -p1 -o sh8bench-new.c SH8BENCH.C sh8bench.patch
+    rm -f sh8bench-new.c
+    patch -p1 -l -o sh8bench-new.c SH8BENCH.C sh8bench.patch
   fi
   popd
 

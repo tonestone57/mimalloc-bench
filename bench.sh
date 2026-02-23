@@ -475,7 +475,7 @@ while : ; do
               column -t "$localdevdir/versions.txt"
             else
               cat "$localdevdir/versions.txt"
-            fi | sed 's/^/  /'
+            fi | "$sedcmd" 's/^/  /'
             echo ""
             exit 0;;
         *) warning "unknown option \"$1\"." 1>&2
@@ -511,7 +511,7 @@ if test "$verbose" = "yes"; then
     column -t "$localdevdir/versions.txt"
   else
     cat "$localdevdir/versions.txt"
-  fi | sed 's/^/  /'
+  fi | "$sedcmd" 's/^/  /'
   echo ""
 fi
 
@@ -656,28 +656,28 @@ function run_test_env_cmd { # <test name> <allocator name> <environment args> <c
   # fixup larson with relative time
   case "$1" in
     redis*)
-      ops=`tail -$redis_tail "$outfile" | sed -n 's/.*: \([0-9\.]*\) requests per second.*/\1/p'`
+      ops=`tail -$redis_tail "$outfile" | "$sedcmd" -n 's/.*: \([0-9\.]*\) requests per second.*/\1/p'`
       rtime=`echo "scale=3; (2000000 / $ops)" | bc`
       echo "$1 $2: ops/sec: $ops, relative time: ${rtime}s"
-      sed -E -i.bak "s/($1  *$2  *)[^ ]*/\10:$rtime/" "$benchres.line";;
+      "$sedcmd" -E -i.bak "s/($1  *$2  *)[^ ]*/\10:$rtime/" "$benchres.line";;
     larson*)
-      rtime=`cat "$1-$2-out.txt" | sed -n 's/.* time: \([0-9\.]*\).*/\1/p'`
+      rtime=`cat "$1-$2-out.txt" | "$sedcmd" -n 's/.* time: \([0-9\.]*\).*/\1/p'`
       echo "$1,$2, relative time: ${rtime}s"
-      sed -E -i.bak "s/($1  *$2  *)[^ ]*/\10:$rtime/" "$benchres.line";;
+      "$sedcmd" -E -i.bak "s/($1  *$2  *)[^ ]*/\10:$rtime/" "$benchres.line";;
     rptest*)
-      ops=`cat "$1-$2-out.txt" | sed -n 's/.*\.\.\.\([0-9]*\) memory ops.*/\1/p'`
+      ops=`cat "$1-$2-out.txt" | "$sedcmd" -n 's/.*\.\.\.\([0-9]*\) memory ops.*/\1/p'`
       rtime=`echo "scale=3; (2000000 / $ops)" | bc`
       echo "$1,$2: ops/sec: $ops, relative time: ${rtime}s"
-      sed -E -i.bak "s/($1  *$2  *)[^ ]*/\10:$rtime/" "$benchres.line";;
+      "$sedcmd" -E -i.bak "s/($1  *$2  *)[^ ]*/\10:$rtime/" "$benchres.line";;
     xmalloc*)
-      rtime=`cat "$1-$2-out.txt" | sed -n 's/rtime: \([0-9\.]*\).*/\1/p'`
+      rtime=`cat "$1-$2-out.txt" | "$sedcmd" -n 's/rtime: \([0-9\.]*\).*/\1/p'`
       echo "$1,$2, relative time: ${rtime}s"
-      sed -E -i.bak "s/($1  *$2  *)[^ ]*/\10:$rtime/" "$benchres.line";;
+      "$sedcmd" -E -i.bak "s/($1  *$2  *)[^ ]*/\10:$rtime/" "$benchres.line";;
     glibc-thread)
-      ops=`cat "$1-$2-out.txt" | sed -n 's/\([0-9\.]*\).*/\1/p'`
+      ops=`cat "$1-$2-out.txt" | "$sedcmd" -n 's/\([0-9\.]*\).*/\1/p'`
       rtime=`echo "scale=3; (1000000000 / $ops)" | bc`
       echo "$1,$2: iterations: ${ops}, relative time: ${rtime}s"
-      sed -E -i.bak "s/($1  *$2  *)[^ ]*/\10:$rtime/" "$benchres.line";;
+      "$sedcmd" -E -i.bak "s/($1  *$2  *)[^ ]*/\10:$rtime/" "$benchres.line";;
     spec-*)
       popd;;
   esac
@@ -827,7 +827,7 @@ done
 # Wrap up
 # --------------------------------------------------------------------
 if test -f "$benchres"; then
-  sed -i.bak "s/ 0:/ /" $benchres
+  "$sedcmd" -i.bak "s/ 0:/ /" $benchres
   echo ""
   echo "results written to: $benchres"
   echo ""
