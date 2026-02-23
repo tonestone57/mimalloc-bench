@@ -676,6 +676,7 @@ fi
 
 if test "$setup_tc" = "1"; then
   checkout tc $version_tc https://github.com/gperftools/gperftools
+  patch -p0 < ../../patches/gperftools_haiku.patch
   if test -f configure; then
     echo "already configured"
   else
@@ -741,7 +742,7 @@ if test "$setup_sn" = "1"; then
     mkdir -p release
     cd release
     # CXX11_DESTRUCTORS is needed as broken on Alpine without, should be fixed in the future upstrem.
-    env CXX=clang++ cmake -G Ninja .. -DCMAKE_BUILD_TYPE=Release -DSNMALLOC_CLEANUP=CXX11_DESTRUCTORS
+    cmake -G Ninja .. -DCMAKE_BUILD_TYPE=Release -DSNMALLOC_CLEANUP=CXX11_DESTRUCTORS
     cd ..
   fi
   cd release
