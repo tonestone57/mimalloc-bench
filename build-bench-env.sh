@@ -553,7 +553,7 @@ fi
 if test "$setup_gd" = "1"; then
   checkout gd $version_gd https://github.com/UTSASRG/Guarder
   if [ -z "$darwin" ] && [ -z "$haiku" ]; then
-    make CC=gcc CXX=g++ CFLAGS="-w" -j $procs
+    make CC=gcc CXX=g++ -j $procs
   else
     make -j $procs
   fi
@@ -601,7 +601,7 @@ if test "$setup_scudo" = "1"; then
   # Build scudo library
   $SCUDO_CXX -flto $SCUDO_LDFLAGS -fPIC -std=c++17 -fno-exceptions $CXXFLAGS \
              -fno-rtti -fvisibility=internal -msse4.2 -O3 -I include \
-             -shared -o libscudo$extso *.cpp -pthread -w
+             -shared -o libscudo$extso *.cpp -pthread
   cd -
   popd
 fi
@@ -609,7 +609,7 @@ fi
 if test "$setup_fg" = "1"; then
   checkout "fg" $version_fg https://github.com/UTSASRG/FreeGuard
   if [ -z "$darwin" ] && [ -z "$haiku" ]; then
-    make CC=gcc CXX=g++ CFLAGS="-w" -j $procs SSE2RNG=1
+    make CC=gcc CXX=g++ -j $procs SSE2RNG=1
   else
     make -j $procs SSE2RNG=1
   fi
