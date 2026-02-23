@@ -895,6 +895,10 @@ fi
 if test "$setup_bench" = "1"; then
   phase "patch shbench"
   pushd "bench/shbench"
+  if test -f sh6bench-new.c && [ "sh6bench.patch" -nt "sh6bench-new.c" ]; then
+    echo "patch updated: removing old bench/shbench/sh6bench-new.c"
+    rm sh6bench-new.c
+  fi
   if test -f sh6bench-new.c; then
     echo "do nothing: bench/shbench/sh6bench-new.c already exists"
   else
@@ -904,6 +908,11 @@ if test "$setup_bench" = "1"; then
     dos2unix sh6bench.patch
     dos2unix sh6bench.c
     patch -p1 -o sh6bench-new.c sh6bench.c sh6bench.patch
+  fi
+
+  if test -f sh8bench-new.c && [ "sh8bench.patch" -nt "sh8bench-new.c" ]; then
+    echo "patch updated: removing old bench/shbench/sh8bench-new.c"
+    rm sh8bench-new.c
   fi
   if test -f sh8bench-new.c; then
     echo "do nothing: bench/shbench/sh8bench-new.c already exists"
