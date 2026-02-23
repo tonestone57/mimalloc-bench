@@ -1,5 +1,5 @@
---- SH8BENCH.C	2026-02-23 14:21:50.072603993 +0000
-+++ sh8bench-new.c	2026-02-23 14:21:50.076603992 +0000
+--- SH8BENCH.C	2026-02-23 14:27:30.744600157 +0000
++++ sh8bench-new.c	2026-02-23 14:27:30.748600157 +0000
 @@ -52,15 +52,18 @@
  #endif /* SYS_MULTI_THREAD */
 
@@ -81,7 +81,7 @@
 		ulThreadCount = atol(argv[5]);
 	else
 -		ulThreadCount = promptAndRead("threads", ulThreadCount, 'u');
-+		defaultThreadCount = promptAndRead("threads", ulThreadCount, 'u');
++		ulThreadCount = promptAndRead("threads", defaultThreadCount, 'u');
 
 	if (argc > 6)
 		ulForeignAllocCount = atol(argv[5]);
