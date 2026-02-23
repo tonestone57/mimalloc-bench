@@ -1,6 +1,12 @@
---- SH8BENCH.C	2026-02-23 12:28:26.130325951 +0000
-+++ sh8bench-fixed.c	2026-02-23 12:30:17.198324701 +0000
-@@ -57,10 +57,13 @@
+--- SH8BENCH.C	2026-02-23 12:31:12.970324073 +0000
++++ sh8bench-fixed.c	2026-02-23 13:12:56.161815443 +0000
+@@ -52,15 +52,18 @@
+ #endif /* SYS_MULTI_THREAD */
+
+ #elif defined(UNIX) || defined(__hpux) || defined(_AIX) || defined(__sun) \
+-	|| defined(sgi) || defined(__DGUX__) || defined(__linux__)
++	|| defined(sgi) || defined(__DGUX__) || defined(__linux__) || defined(__HAIKU__)
+ /* Unix prototypes */
  #ifndef UNIX
  #define UNIX 1
  #endif
@@ -87,14 +93,16 @@
 
 		if (uCPUs)
 		{
-@@ -543,6 +557,7 @@
+@@ -543,7 +557,8 @@
 			{
 				printf("Out of memory\n");
 				_exit (1);
-			}
+-			}
++			}
 +			{ char* p = mp[-1]; p[0] = 0; p[size-1] = 0; }
 		}
 	}
+
 @@ -577,6 +592,7 @@
  {
 	char *arg = NULL, *err;

@@ -1,6 +1,12 @@
---- sh6bench.c	2026-02-23 12:28:26.010325953 +0000
-+++ sh6bench-fixed.c	2026-02-23 12:30:17.198324701 +0000
-@@ -55,12 +55,19 @@
+--- sh6bench.c	2026-02-23 12:31:12.858324074 +0000
++++ sh6bench-fixed.c	2026-02-23 13:12:56.161815443 +0000
+@@ -50,17 +50,24 @@
+ #endif /* SYS_MULTI_THREAD */
+
+ #elif defined(UNIX) || defined(__hpux) || defined(_AIX) || defined(__sun) \
+-	|| defined(sgi) || defined(__DGUX__) || defined(__linux__)
++	|| defined(sgi) || defined(__DGUX__) || defined(__linux__) || defined(__HAIKU__)
+ /* Unix prototypes */
  #ifndef UNIX
  #define UNIX 1
  #endif
