@@ -515,6 +515,9 @@ if test "$setup_packages" = "1"; then
     #   lp   -- uses pthread_getname_np (not on Haiku)
   #   pa   -- requires cipd (unavailable on Haiku)
     echo "Haiku: packages installed."
+
+    echo "Haiku: building scripts/haiku-time..."
+    gcc -O2 -o scripts/haiku-time scripts/haiku-time.c
   fi
 fi
 

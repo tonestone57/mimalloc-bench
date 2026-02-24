@@ -64,9 +64,10 @@ case "$OSTYPE" in
     # Haiku supports LD_PRELOAD natively (same variable name as Linux)
     ldpreload="LD_PRELOAD"
     extso=".so"
-    # Use GNU time for full -f format string support.
-    # Install via: pkgman install time
-    if command -v gtime > /dev/null 2>&1; then
+    # Use our specialized time wrapper if available, otherwise GNU time.
+    if [ -x "$(dirname "$0")/scripts/haiku-time" ]; then
+      timecmd="$(dirname "$0")/scripts/haiku-time"
+    elif command -v gtime > /dev/null 2>&1; then
       timecmd=gtime
     elif [ -x /bin/time ] && /bin/time --version 2>&1 | grep -q GNU; then
       timecmd=/bin/time
