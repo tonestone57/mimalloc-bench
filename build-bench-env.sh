@@ -542,7 +542,7 @@ fi
 if test "$setup_hm" = "1"; then
   checkout hm $version_hm https://github.com/GrapheneOS/hardened_malloc
   if test "$haiku" = "1"; then
-    patch -p1 < ../../patches/hardened_malloc_haiku.patch
+    patch -p1 -l -N < "$curdir/patches/hardened_malloc_haiku.patch" || true
     export LDLIBS="-lbsd"
   fi
   make CONFIG_NATIVE=true CONFIG_WERROR=false VARIANT=light -j $procs
@@ -566,7 +566,7 @@ fi
 if test "$setup_iso" = "1"; then
   checkout iso $version_iso https://github.com/struct/isoalloc
   if test "$haiku" = "1"; then
-    patch -p1 < ../../patches/iso_alloc_haiku.patch
+    patch -p1 -l -N < "$curdir/patches/iso_alloc_haiku.patch" || true
   fi
   make library -j $procs
   popd
@@ -686,7 +686,7 @@ fi
 if test "$setup_tbb" = "1"; then
   checkout tbb $version_tbb https://github.com/oneapi-src/oneTBB
   if test "$haiku" = "1"; then
-    patch -p1 < ../../patches/tbb_haiku.patch
+    patch -p1 -l -N < "$curdir/patches/tbb_haiku.patch" || true
   fi
   cmake -DCMAKE_POLICY_VERSION_MINIMUM=3.10 -DCMAKE_BUILD_TYPE=Release -DTBB_BUILD=OFF -DTBB_TEST=OFF -DTBB_OUTPUT_DIR_BASE=bench .
   make -j $procs
@@ -695,7 +695,7 @@ fi
 
 if test "$setup_tc" = "1"; then
   checkout tc $version_tc https://github.com/gperftools/gperftools
-  patch -p0 < ../../patches/gperftools_haiku.patch
+  patch -p0 -l -N < "$curdir/patches/gperftools_haiku.patch" || true
   if test -f configure; then
     echo "already configured"
   else
@@ -747,7 +747,7 @@ fi
 
 if test "$setup_rp" = "1"; then
   checkout rp $version_rp https://github.com/mjansson/rpmalloc
-  patch -p1 -N < ../../patches/rpmalloc_python313.patch || true
+  patch -p1 -l -N < "$curdir/patches/rpmalloc_python313.patch" || true
   if test -f build.ninja; then
     echo "$devdir/rpmalloc is already configured; no need to reconfigure"
   else
@@ -763,7 +763,7 @@ fi
 if test "$setup_sn" = "1"; then
   checkout sn $version_sn https://github.com/Microsoft/snmalloc
   if test "$haiku" = "1"; then
-    patch -p1 -l -N < ../../patches/snmalloc_haiku.patch || true
+    patch -p1 -l -N < "$curdir/patches/snmalloc_haiku.patch" || true
   fi
   if test -f release/build.ninja; then
     echo "$devdir/sn is already configured; no need to reconfigure"
@@ -891,9 +891,7 @@ if test "$setup_rocksdb" = "1"; then
   fi
 
   cd "rocksdb-$version_rocksdb"
-  set +e
-  patch -p1 -N -r- < ../../patches/rocksdb_build.patch > /dev/null
-  set -e
+  patch -p1 -l -N -r- < "$curdir/patches/rocksdb_build.patch" > /dev/null || true
   DISABLE_WARNING_AS_ERROR=1 DISABLE_JEMALLOC=1 ROCKSDB_DISABLE_TCMALLOC=1 make db_bench -j $procs
   [ "$CI" ] && find . -name '*.o' -delete
   popd
@@ -902,7 +900,7 @@ fi
 if test "$setup_lean" = "1"; then
   phase "build lean $version_lean"
   checkout lean $version_lean https://github.com/leanprover-community/lean
-  patch -p1 < ../../patches/lean_alpine.patch
+  patch -p1 -l -N < "$curdir/patches/lean_alpine.patch" || true
   mkdir -p out/release
   cd out/release
   env CC=gcc CXX="g++" cmake -DCMAKE_POLICY_VERSION_MINIMUM=3.5 ../../src -DCUSTOM_ALLOCATORS=OFF -DLEAN_EXTRA_CXX_FLAGS="-w"
