@@ -1,0 +1,11 @@
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -552,7 +552,7 @@
+       SNMALLOC_PAGEID=$<IF:$<BOOL:${SNMALLOC_PAGEID}>,true,false>)
+
+     if(MSVC)
+-    else()
++    elseif(NOT CMAKE_SYSTEM_NAME STREQUAL "Haiku")
+       # We can't do --nostdlib++ as we are using exceptions, but we
+       # can make it a static dependency, which we aren't really using
+       # as the interesting stuff for exceptions is in libgcc_s

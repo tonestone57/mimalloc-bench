@@ -759,6 +759,9 @@ fi
 
 if test "$setup_sn" = "1"; then
   checkout sn $version_sn https://github.com/Microsoft/snmalloc
+  if test "$haiku" = "1"; then
+    patch -p1 < ../../patches/snmalloc_haiku.patch
+  fi
   if test -f release/build.ninja; then
     echo "$devdir/snmalloc is already configured; no need to reconfigure"
   else
