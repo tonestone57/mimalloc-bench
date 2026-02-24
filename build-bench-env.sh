@@ -156,7 +156,7 @@ while : ; do
         setup_lp=$flag_arg
         setup_mi=$flag_arg
         setup_mi2=$flag_arg
-        setup_pa=$flag_arg
+        setup_pa=0  # Currently broken upstream due to missing third_party dependencies
         setup_sn=$flag_arg
         setup_sg=$flag_arg
         setup_tbb=$flag_arg
@@ -461,42 +461,42 @@ if test "$setup_packages" = "1"; then
   if grep -q 'ID=fedora' /etc/os-release 2>/dev/null; then
     # no 'apt update' equivalent needed on Fedora
     dnfinstall "gcc-c++ clang lld llvm-devel unzip dos2unix bc gmp-devel wget gawk \
-      cmake python3 ruby ninja-build libtool autoconf git patch time sed \
-      ghostscript libatomic libstdc++ which gflags-devel xz readline-devel snappy-devel"
+      cmake python3 python3-six ruby ninja-build libtool autoconf git patch time sed \
+      ghostscript z3 libatomic libstdc++ which gflags-devel xz readline-devel snappy-devel"
     # bazel5 is broken on the copr: https://github.com/bazelbuild/bazel/issues/19295
     #dnfinstallbazel
   elif grep -q -e 'ID=debian' -e 'ID=ubuntu' /etc/os-release 2>/dev/null; then
     echo "updating package database... ($SUDO apt update)"
     $SUDO apt update -qq
     aptinstall "build-essential git gpg g++ clang lld llvm-dev unzip dos2unix linuxinfo bc libgmp-dev wget \
-      cmake python3 ruby ninja-build libtool autoconf sed ghostscript time \
+      cmake python3 python3-six ruby ninja-build libtool autoconf sed ghostscript z3 time \
       curl automake libatomic1 libgflags-dev libsnappy-dev zlib1g-dev libbz2-dev \
       liblz4-dev libzstd-dev libreadline-dev pkg-config gawk util-linux"
     aptinstallbazel
   elif grep -q -e 'ID=alpine' /etc/os-release 2>/dev/null; then
     echo "@testing http://nl.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories
     apk update
-    apkinstall "clang lld unzip dos2unix bc gmp-dev wget cmake python3 automake gawk \
+    apkinstall "clang lld unzip dos2unix bc gmp-dev wget cmake python3 py3-six automake gawk \
       samurai libtool git build-base linux-headers autoconf util-linux sed \
-      ghostscript libatomic gflags-dev readline-dev snappy-dev"
+      ghostscript z3 libatomic gflags-dev readline-dev snappy-dev"
     apkinstall "bazel@testing"
   elif brew --version 2> /dev/null >/dev/null; then
     brewinstall "dos2unix wget cmake ninja automake libtool gnu-time gmp mpir gnu-sed \
       ghostscript bazelisk gflags snappy"
   elif grep -q 'Arch Linux' /etc/os-release 2>/dev/null; then
-    sudo pacman -S dos2unix wget cmake ninja automake libtool time gmp sed ghostscript bazelisk gflags snappy
+    $SUDO pacman -S dos2unix wget cmake ninja automake libtool time gmp sed ghostscript z3 bazelisk gflags snappy python-six
   elif test "$haiku" = "1"; then
     # ruby       -- needed for rbstress benchmark
     # time       -- GNU time, needed for -f format string in bench.sh
     # gnu_sed    -- GNU sed, needed for -E and -i.bak in bench.sh result parsing
     # dos2unix   -- needed to patch shbench source files
     echo ""
-    echo "> pkgman install -y gcc llvm12_clang cmake ninja python3.14 automake libtool autoconf git wget dos2unix bc gmp_devel sed coreutils ruby libatomic_ops_devel time snappy_devel readline_devel"
+    echo "> pkgman install -y gcc llvm12_clang cmake ninja python3.14 automake libtool autoconf git wget dos2unix bc gmp_devel sed gnu_sed coreutils ruby libatomic_ops_devel time z3 ghostscript snappy_devel readline_devel"
     echo ""
     pkgman install -y gcc llvm12_clang cmake ninja python3.14 automake libtool autoconf \
-      git wget dos2unix bc gmp_devel sed coreutils \
-      ruby libatomic_ops_devel time \
-      snappy_devel readline_devel
+      git wget dos2unix bc gmp_devel sed gnu_sed coreutils \
+      ruby libatomic_ops_devel time z3 \
+      ghostscript snappy_devel readline_devel
     haikuinstallbazel
     # Allocators not expected to build on Haiku:
     #   dh   -- uses __malloc_hook (glibc internal)
@@ -675,7 +675,7 @@ if test "$setup_dh" = "1"; then
   checkout dh $version_dh https://github.com/emeryberger/DieHard
   # remove all the historical useless junk
   rm -rf ./benchmarks/ ./src/archipelago/ ./src/build/ ./src/exterminator/ ./src/local/ ./src/original-diehard/ ./src/replicated/ ./docs
-  cmake -S . -B build
+  cmake -DBUILD_DIEHARDER=ON -S . -B build
   cmake --build build -j $procs
   popd
 fi
@@ -713,7 +713,9 @@ if test "$setup_tcg" = "1"; then
   sed -i 's/native\.cc_library/cc_library/g' tcmalloc/variants.bzl
   sed -i 's/native\.cc_binary/cc_binary/g' tcmalloc/variants.bzl
   sed -i 's/native\.cc_test/cc_test/g' tcmalloc/variants.bzl
-  bazel build -c opt tcmalloc
+  # Build tcmalloc as a shared library
+  echo 'cc_binary(name = "libtcmalloc.so", linkshared = True, deps = [":tcmalloc"])' >> tcmalloc/BUILD
+  bazel build -c opt //tcmalloc:libtcmalloc.so
   popd
 fi
 
@@ -803,6 +805,8 @@ if test "$setup_sc" = "1"; then
     else
       tools/make_deps.sh
     fi
+    # fix bashism in gyp
+    sed -i 's/>& \/dev\/null/> \/dev\/null 2>\&1/' build/gyp/gyp
     build/gyp/gyp --depth=. scalloc.gyp
   fi
   BUILDTYPE=Release make -j $procs
@@ -866,6 +870,10 @@ if test "$setup_rocksdb" = "1"; then
   phase "build rocksdb $version_rocksdb"
 
   pushd "$devdir"
+  if test -d "rocksdb-$version_rocksdb" && test ! -d "rocksdb-$version_rocksdb/include"; then
+    echo "$devdir/rocksdb-$version_rocksdb exists but is incomplete; removing it"
+    rm -rf "rocksdb-$version_rocksdb"
+  fi
   if test -d "rocksdb-$version_rocksdb"; then
     echo "$devdir/rocksdb-$version_rocksdb already exists; no need to download it"
   else
@@ -886,9 +894,10 @@ fi
 if test "$setup_lean" = "1"; then
   phase "build lean $version_lean"
   checkout lean $version_lean https://github.com/leanprover-community/lean
+  patch -p1 < ../../patches/lean_alpine.patch
   mkdir -p out/release
   cd out/release
-  env CC=gcc CXX="g++" cmake ../../src -DCUSTOM_ALLOCATORS=OFF -DLEAN_EXTRA_CXX_FLAGS="-w"
+  env CC=gcc CXX="g++" cmake -DCMAKE_POLICY_VERSION_MINIMUM=3.5 ../../src -DCUSTOM_ALLOCATORS=OFF -DLEAN_EXTRA_CXX_FLAGS="-w"
   echo "make -j$procs"
   make -j $procs
   rm -rf ./tests/  # we don't need tests

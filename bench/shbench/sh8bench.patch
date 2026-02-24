@@ -36,7 +36,7 @@
  unsigned uMinBlockSize = 1;
 -unsigned long ulIterations   =  100000;
 +unsigned long ulIterations   =  700000;
- unsigned long ulHeapSize     = 1000000;
+ unsigned long ulHeapSize	 = 1000000;
  unsigned ulForeignAllocCount = 10000000;
 
 @@ -177,7 +180,8 @@
@@ -56,7 +56,7 @@
 +#ifdef BENCH
 +	fin = stdin;
 +	fout = stdout;
-+    defaultThreadCount = GetNumProcessors();
++	defaultThreadCount = GetNumProcessors();
 +	if (argc==2) {
 +		char* end;
 +		long l = strtol(argv[1],&end,10);
@@ -100,7 +100,7 @@
 				_exit (1);
 -			}
 +			}
-+			{ char* p = mp[-1]; p[0] = 0; p[size-1] = 0; }
++			else { char* p = mp[-1]; p[0] = 0; p[size-1] = 0; }
 		}
 	}
 
