@@ -1,5 +1,5 @@
---- sh6bench.c	2026-02-23 14:27:30.736600157 +0000
-+++ sh6bench-new.c	2026-02-23 14:27:30.744600157 +0000
+--- sh6bench.c.orig	2026-02-24 11:00:03.309379381 +0000
++++ sh6bench-new.c	2026-02-24 11:00:03.309379381 +0000
 @@ -50,17 +50,24 @@
  #endif /* SYS_MULTI_THREAD */
 
@@ -36,23 +36,16 @@
  #ifdef MALLOC_ONLY
  #undef malloc
  #undef realloc
-@@ -152,7 +159,7 @@
- FILE *fout, *fin;
- unsigned uMaxBlockSize = 1000;
- unsigned uMinBlockSize = 1;
--unsigned long ulCallCount = 1000;
-+unsigned long ulCallCount = 10000;
-
- unsigned long promptAndRead(char *msg, unsigned long defaultVal, char fmtCh);
-
-@@ -184,6 +191,7 @@
+@@ -184,7 +191,8 @@
 
  void doBench(void *);
 
+-void main(int argc, char *argv[])
 +unsigned int defaultThreadCount = 1;
- void main(int argc, char *argv[])
++int main(int argc, char *argv[])
  {
 	clock_t startCPU;
+	time_t startTime;
 @@ -195,6 +203,16 @@
  #endif
 
@@ -78,16 +71,7 @@
 
 	ulCallCount = promptAndRead("call count", ulCallCount, 'u');
 	uMinBlockSize = (unsigned)promptAndRead("min block size",uMinBlockSize,'u');
-@@ -220,7 +239,7 @@
-		ThreadID *tids;
-
- #ifdef WIN32
--		unsigned uCPUs = promptAndRead("CPUs (0 for all)", 0, 'u');
-+		unsigned uCPUs = promptAndRead("CPUs (0 for all)", PROCS, 'u');
-
-		if (uCPUs)
-		{
-@@ -253,10 +272,17 @@
+@@ -253,7 +272,7 @@
 		}
  #endif /* WIN32 */
 
@@ -96,33 +80,15 @@
 
 		if (uThreadCount < 1)
 			uThreadCount = 1;
-+
-+		if (uThreadCount==1) {
-+			startCPU = clock();
-+			startTime = time(NULL);
-+			doBench(NULL);
-+		}
-+		else {
-		ulCallCount /= uThreadCount;
-		if ((tids = malloc(sizeof(ThreadID) * uThreadCount)) != NULL)
-		{
-@@ -274,6 +300,7 @@
-		}
-		if (threadArg)
-			free(threadArg);
-+		}
-	}
- #else
-	startCPU = clock();
-@@ -299,6 +326,7 @@
+@@ -299,6 +318,7 @@
 		fclose(fin);
 	if (fout != stdout)
 		fclose(fout);
-+	exit(0);
++	return 0;
  }
 
  void doBench(void *arg)
-@@ -334,11 +362,18 @@
+@@ -334,11 +354,17 @@
 			while (iterations--)
 			{
 
@@ -138,27 +104,33 @@
 +					p[0] = 0; p[size-1] = 0;
 +					mp++;
 +				}
-+
 
 	  /* while allocating skip over that portion of the buffer that still
-	\t holds pointers from the previous cycle
-@@ -387,6 +422,7 @@
+	     holds pointers from the previous cycle
+@@ -387,14 +413,14 @@
  {
 	char *arg = NULL, *err;
 	unsigned long result;
+-	{
+-		char buf[12];
+-		static char fmt[] = "\n%s [%lu]: ";
+-		fmt[7] = fmtCh;
+-		fprintf_silent(fout, fmt, msg, defaultVal);
+-		if (fgets(buf, 11, fin))
+-			arg = &buf[0];
+-	}
 +#ifndef BENCH
-	{
-		char buf[12];
-		static char fmt[] = "\n%s [%lu]: ";
-@@ -395,6 +431,7 @@
-		if (fgets(buf, 11, fin))
-			arg = &buf[0];
-	}
++	char buf[12];
++	static char fmt[] = "\n%s [%lu]: ";
++	fmt[7] = fmtCh;
++	fprintf_silent(fout, fmt, msg, defaultVal);
++	if (fgets(buf, 11, fin))
++		arg = &buf[0];
 +#endif
 	if (arg && ((result = strtoul(arg, &err, 10)) != 0
 					|| (*err == '\n' && arg != err)))
 	{
-@@ -429,7 +466,7 @@
+@@ -429,7 +455,7 @@
 							 (pthread_startroutine_t)fn, arg) == -1)
 		 return THREAD_NULL;
 
@@ -167,7 +139,7 @@
 	pthread_attr_t attr;
 	pthread_attr_init(&attr);
  #ifdef _AIX
-@@ -462,7 +499,7 @@
+@@ -462,7 +488,7 @@
 	while (tidCnt--)
 		thr_join(0, NULL, NULL);
 
@@ -175,13 +147,3 @@
 +#elif defined(_POSIX_THREADS) || defined(_POSIX_REENTRANT_FUNCTIONS) || defined(__HAIKU__)
 	while (tidCnt--)
 		pthread_join(tids[tidCnt], NULL);
-
-@@ -509,6 +546,8 @@
-	return get_nprocs();
- #elif defined(_SC_NPROCESSORS_ONLN)
-	return sysconf(_SC_NPROCESSORS_ONLN);
-+#elif defined(__HAIKU__)
-+	return sysconf(_SC_NPROCESSORS_ONLN);
-
- #elif defined(_SC_NPROCESSORS_CONF)
-	return sysconf(_SC_NPROCESSORS_CONF);
