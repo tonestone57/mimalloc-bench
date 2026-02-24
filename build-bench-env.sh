@@ -37,6 +37,9 @@ fi
 
 # On Haiku, sudo may not be installed by default; fall back to running
 # package management commands directly (pkgman does not require sudo).
+if [ -z "$haiku" ] && [ "$(uname -s)" = "Haiku" ]; then
+  haiku="1"
+fi
 if test "$haiku" = "1"; then
   SUDO=""
 fi
@@ -759,6 +762,9 @@ fi
 
 if test "$setup_sn" = "1"; then
   checkout sn $version_sn https://github.com/Microsoft/snmalloc
+  if test "$haiku" = "1"; then
+    patch -p1 -N < ../../patches/snmalloc_haiku.patch || true
+  fi
   if test -f release/build.ninja; then
     echo "$devdir/snmalloc is already configured; no need to reconfigure"
   else
@@ -863,6 +869,7 @@ fi
 if test "$setup_yal" = "1"; then
   checkout yal $version_yal https://github.com/jorisgeer/yalloc
   ./build.sh -V
+  popd
 fi
 
 phase "install benchmarks"
