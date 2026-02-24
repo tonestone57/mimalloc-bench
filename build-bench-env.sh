@@ -828,6 +828,9 @@ fi
 
 if test "$setup_mi" = "1"; then
   checkout mi $version_mi https://github.com/microsoft/mimalloc
+  if test "$haiku" = "1"; then
+    patch -p1 -l -N < "$curdir/patches/mimalloc_haiku.patch" || true
+  fi
 
   echo ""
   echo "- build mimalloc release"
@@ -851,6 +854,9 @@ fi
 
 if test "$setup_mi2" = "1"; then
   checkout mi2 $version_mi2 https://github.com/microsoft/mimalloc
+  if test "$haiku" = "1"; then
+    patch -p1 -l -N < "$curdir/patches/mimalloc_haiku.patch" || true
+  fi
 
   echo ""
   echo "- build mimalloc2 release"

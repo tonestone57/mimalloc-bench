@@ -1,0 +1,12 @@
+--- a/src/prim/unix/prim.c
++++ b/src/prim/unix/prim.c
+@@ -27,6 +27,9 @@
+
+ #include <sys/mman.h>  // mmap
+ #include <unistd.h>    // sysconf
++#if defined(__HAIKU__)
++#include <fcntl.h>
++#endif
+
+ #if defined(__linux__)
+   #include <features.h>
