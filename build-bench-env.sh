@@ -744,6 +744,7 @@ fi
 
 if test "$setup_rp" = "1"; then
   checkout rp $version_rp https://github.com/mjansson/rpmalloc
+  patch -p1 -N < ../../patches/rpmalloc_python313.patch || true
   if test -f build.ninja; then
     echo "$devdir/rpmalloc is already configured; no need to reconfigure"
   else
