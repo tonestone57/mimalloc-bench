@@ -60,7 +60,7 @@
 +#ifdef BENCH
 +	fin = stdin;
 +	fout = stdout;
-+    defaultThreadCount = GetNumProcessors();
++	defaultThreadCount = GetNumProcessors();
 +	if (argc==2) {
 +		char* end;
 +		long l = strtol(argv[1],&end,10);
@@ -122,15 +122,27 @@
  }
 
  void doBench(void *arg)
-@@ -339,6 +367,7 @@
+@@ -334,11 +362,18 @@
+			while (iterations--)
+			{
+
+-				if (!memory || !(*mp ++ = (char *)malloc(size)))
++				if (!memory || !(*mp = (char *)malloc(size)))
+				{
 					printf("Out of memory\n");
 					_exit (1);
 				}
-+				char* p = mp[-1]; p[0] = 0; p[size-1] = 0;
++				else
++				{
++					char* p = *mp;
++					p[0] = 0; p[size-1] = 0;
++					mp++;
++				}
++
 
 	  /* while allocating skip over that portion of the buffer that still
-	     holds pointers from the previous cycle
-@@ -387,6 +416,7 @@
+	\t holds pointers from the previous cycle
+@@ -387,6 +422,7 @@
  {
 	char *arg = NULL, *err;
 	unsigned long result;
@@ -138,7 +150,7 @@
 	{
 		char buf[12];
 		static char fmt[] = "\n%s [%lu]: ";
-@@ -395,6 +425,7 @@
+@@ -395,6 +431,7 @@
 		if (fgets(buf, 11, fin))
 			arg = &buf[0];
 	}
@@ -146,7 +158,7 @@
 	if (arg && ((result = strtoul(arg, &err, 10)) != 0
 					|| (*err == '\n' && arg != err)))
 	{
-@@ -429,7 +460,7 @@
+@@ -429,7 +466,7 @@
 							 (pthread_startroutine_t)fn, arg) == -1)
 		 return THREAD_NULL;
 
@@ -155,7 +167,7 @@
 	pthread_attr_t attr;
 	pthread_attr_init(&attr);
  #ifdef _AIX
-@@ -462,7 +493,7 @@
+@@ -462,7 +499,7 @@
 	while (tidCnt--)
 		thr_join(0, NULL, NULL);
 
@@ -164,7 +176,7 @@
 	while (tidCnt--)
 		pthread_join(tids[tidCnt], NULL);
 
-@@ -509,6 +540,8 @@
+@@ -509,6 +546,8 @@
 	return get_nprocs();
  #elif defined(_SC_NPROCESSORS_ONLN)
 	return sysconf(_SC_NPROCESSORS_ONLN);

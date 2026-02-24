@@ -1,0 +1,26 @@
+diff --git a/src/util/hash.cpp b/src/util/hash.cpp
+index 738e6e5..54eaed1 100644
+--- a/src/util/hash.cpp
++++ b/src/util/hash.cpp
+@@ -5,6 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
+ Author: Leonardo de Moura
+ */
+ #include "util/hash.h"
++#include <cstdint>
+ #include <string>
+
+ namespace lean {
+diff --git a/src/library/parray.h b/src/library/parray.h
+index 5a5d6e6..4b8e6e5 100644
+--- a/src/library/parray.h
++++ b/src/library/parray.h
+@@ -589,8 +589,8 @@ public:
+     parray & operator=(parray && s) {
+         if (m_cell)
+             dec_ref(m_cell);
+-        m_cell = s.m_ptr;
+-        s.m_ptr = nullptr;
++        m_cell = s.m_cell;
++        s.m_cell = nullptr;
+         return *this;
+     }
