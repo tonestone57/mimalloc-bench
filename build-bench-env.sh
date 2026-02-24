@@ -734,6 +734,9 @@ fi
 
 if test "$setup_je" = "1"; then
   checkout je $version_je https://github.com/jemalloc/jemalloc
+  if test "$haiku" = "1"; then
+    patch -p1 -N < ../../patches/jemalloc_haiku.patch || true
+  fi
   if test -f config.status; then
     echo "$devdir/jemalloc is already configured; no need to reconfigure"
   else
