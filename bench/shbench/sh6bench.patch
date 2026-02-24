@@ -1,5 +1,5 @@
---- a/sh6bench.c	2026-02-24 12:10:48.181551335 +0000
-+++ b/sh6bench-new.c	2026-02-24 16:54:59.512940499 +0000
+--- a/sh6bench.c	2026-02-24 16:58:34.232938081 +0000
++++ b/sh6bench-new.c	2026-02-24 17:27:36.069841217 +0000
 @@ -50,17 +50,24 @@
  #endif /* SYS_MULTI_THREAD */
 
@@ -90,7 +90,7 @@
  }
 
  void doBench(void *arg)
-@@ -334,11 +356,17 @@
+@@ -334,11 +356,19 @@
 			while (iterations--)
 			{
 
@@ -103,13 +103,15 @@
 +				else
 +				{
 +					char* p = *mp;
-+					p[0] = 0; p[size-1] = 0;
++					if (size > 0) {
++						p[0] = 0; p[size-1] = 0;
++					}
 +					mp++;
 +				}
 
 	  /* while allocating skip over that portion of the buffer that still
 	     holds pointers from the previous cycle
-@@ -387,14 +415,14 @@
+@@ -387,14 +417,14 @@
  {
 	char *arg = NULL, *err;
 	unsigned long result;
@@ -125,14 +127,14 @@
 +#ifndef BENCH
 +	static char fmt[] = "\n%s [%lu]: ";
 +	fmt[7] = fmtCh;
-+	fprintf_silent(fout, fmt, msg, defaultVal);
++	fprintf(fout, fmt, msg, defaultVal);
 +	if (fgets(buf, 11, fin))
 +		arg = &buf[0];
 +#endif
 	if (arg && ((result = strtoul(arg, &err, 10)) != 0
 					|| (*err == '\n' && arg != err)))
 	{
-@@ -429,7 +457,7 @@
+@@ -429,7 +459,7 @@
 							 (pthread_startroutine_t)fn, arg) == -1)
 		 return THREAD_NULL;
 
@@ -141,7 +143,7 @@
 	pthread_attr_t attr;
 	pthread_attr_init(&attr);
  #ifdef _AIX
-@@ -462,7 +490,7 @@
+@@ -462,7 +492,7 @@
 	while (tidCnt--)
 		thr_join(0, NULL, NULL);
 

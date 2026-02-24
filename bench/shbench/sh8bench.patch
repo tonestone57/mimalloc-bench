@@ -1,5 +1,5 @@
---- a/SH8BENCH.C	2026-02-24 12:10:48.305551333 +0000
-+++ b/sh8bench-new.c	2026-02-24 16:55:10.204940378 +0000
+--- a/SH8BENCH.C	2026-02-24 16:58:34.360938080 +0000
++++ b/sh8bench-new.c	2026-02-24 17:27:41.317841158 +0000
 @@ -52,15 +52,18 @@
  #endif /* SYS_MULTI_THREAD */
 
@@ -94,7 +94,7 @@
  }
 
 
-@@ -539,11 +554,17 @@
+@@ -539,11 +554,19 @@
 
 				mp = memory;
 			}
@@ -107,13 +107,15 @@
 +			else
 +			{
 +				char* p = *mp;
-+				p[0] = 0; p[size-1] = 0;
++				if (size > 0) {
++					p[0] = 0; p[size-1] = 0;
++				}
 +				mp++;
 +			}
 		}
 	}
 
-@@ -571,20 +592,21 @@
+@@ -571,20 +594,21 @@
 	MemPoolCheck(MemDefaultPool);
 	MemPoolCheck(0);
  #endif
@@ -136,14 +138,14 @@
 +#ifndef BENCH
 +	static char fmt[] = "\n%s [%lu]: ";
 +	fmt[7] = fmtCh;
-+	fprintf_silent(fout, fmt, msg, defaultVal);
++	fprintf(fout, fmt, msg, defaultVal);
 +	if (fgets(buf, 11, fin))
 +		arg = &buf[0];
 +#endif
 	if (arg && ((result = strtoul(arg, &err, 10)) != 0
 					|| (*err == '\n' && arg != err)))
 	{
-@@ -619,7 +641,7 @@
+@@ -619,7 +643,7 @@
 							 (pthread_startroutine_t)fn, arg) == -1)
 		 return THREAD_NULL;
 
@@ -152,7 +154,7 @@
 	pthread_attr_t attr;
 	pthread_attr_init(&attr);
  #ifdef _AIX
-@@ -654,7 +676,7 @@
+@@ -654,7 +678,7 @@
 	while (tidCnt--)
 		thr_join(0, NULL, NULL);
 
