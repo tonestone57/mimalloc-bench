@@ -189,7 +189,7 @@ while : ; do
         setup_bench=$flag_arg
         setup_packages=$flag_arg
         ;;
-    bench|sh6bench|sh8bench)
+    bench)
         setup_bench=$flag_arg;;
     ff)
         setup_ff=$flag_arg;;
@@ -297,8 +297,6 @@ while : ; do
         echo "  yal                          setup yalloc ($version_yal)"
         echo ""
         echo "  bench                        build all local benchmarks"
-        echo "  sh6bench                     alias for bench"
-        echo "  sh8bench                     alias for bench"
         echo "  lean                         setup lean 3 benchmark"
         echo "  packages                     setup required packages"
         echo "  redis                        setup redis benchmark"
