@@ -488,13 +488,13 @@ if test "$setup_packages" = "1"; then
   elif test "$haiku" = "1"; then
     # ruby       -- needed for rbstress benchmark
     # time       -- GNU time, needed for -f format string in bench.sh
-    # gnu_sed    -- GNU sed, needed for -E and -i.bak in bench.sh result parsing
+    # sed        -- GNU sed, needed for -E and -i.bak in bench.sh result parsing
     # dos2unix   -- needed to patch shbench source files
     echo ""
-    echo "> pkgman install -y gcc llvm12_clang cmake ninja python3.14 automake libtool autoconf git wget dos2unix bc gmp_devel sed gnu_sed coreutils ruby libatomic_ops_devel time z3 ghostscript snappy_devel readline_devel"
+    echo "> pkgman install -y gcc llvm12_clang cmake ninja python3.14 automake libtool autoconf git wget dos2unix bc gmp_devel sed coreutils ruby libatomic_ops_devel time z3 ghostscript snappy_devel readline_devel"
     echo ""
     pkgman install -y gcc llvm12_clang cmake ninja python3.14 automake libtool autoconf \
-      git wget dos2unix bc gmp_devel sed gnu_sed coreutils \
+      git wget dos2unix bc gmp_devel sed coreutils \
       ruby libatomic_ops_devel time z3 \
       ghostscript snappy_devel readline_devel
     haikuinstallbazel
