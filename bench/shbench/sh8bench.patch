@@ -1,5 +1,5 @@
---- SH8BENCH.C	2026-02-23 14:27:30.744600157 +0000
-+++ sh8bench-new.c	2026-02-23 14:27:30.748600157 +0000
+--- SH8BENCH.C	2026-02-24 11:11:12.689371845 +0000
++++ sh8bench-new.c	2026-02-24 11:11:12.689371845 +0000
 @@ -52,15 +52,18 @@
  #endif /* SYS_MULTI_THREAD */
 
@@ -30,15 +30,6 @@
  #endif
 
  #ifndef THREAD_NULL
-@@ -135,7 +138,7 @@
- FILE *fout, *fin;
- unsigned uMaxBlockSize = 1000;
- unsigned uMinBlockSize = 1;
--unsigned long ulIterations   =  100000;
-+unsigned long ulIterations   =  700000;
- unsigned long ulHeapSize	 = 1000000;
- unsigned ulForeignAllocCount = 10000000;
-
 @@ -177,7 +180,8 @@
  THREAD_FN_RETURN doBench(void *);
 
@@ -66,17 +57,15 @@
 
 	/* @@@ change to use flags specifying which parms are passed */
 
-@@ -200,7 +214,8 @@
+@@ -200,6 +214,7 @@
 		fout = fopen(argv[2], "w");
 	else
 		fout = stdout;
--
 +#endif
-+
+
 	if (argc > 3)
 		ulHeapSize = atol(argv[3]);
-	else
-@@ -215,10 +230,12 @@
+@@ -215,15 +230,12 @@
 	if (argc > 5)
 		ulThreadCount = atol(argv[5]);
 	else
@@ -86,65 +75,66 @@
 	if (argc > 6)
 -		ulForeignAllocCount = atol(argv[5]);
 +		ulForeignAllocCount = atol(argv[6]);
-+	else
+	else
+-		ulForeignAllocCount =
+-							promptAndRead("allocs freed from non-allocating thread",
+-											  ulForeignAllocCount, 'u');
+-
 +		ulForeignAllocCount = promptAndRead("foreign alloc count", ulForeignAllocCount, 'u');
+ #endif /* SYS_MULTI_THREAD */
 
-	if (argc > 7)
-		uMaxBlockSize = (unsigned)atol(argv[7]);
-@@ -240,7 +257,7 @@
-		void *threadArg = NULL;
+	/* @@@
+@@ -386,6 +398,7 @@
+		fclose(fin);
+	if (fout != stdout)
+		fclose(fout);
++	return 0;
+ }
 
- #ifdef WIN32
--		unsigned uCPUs = promptAndRead("CPUs (0 for all)", 0, 'u');
-+		unsigned uCPUs = promptAndRead("CPUs (GetNumProcessors() for all)", 0, 'u');
 
-		if (uCPUs)
-		{
-@@ -539,11 +556,18 @@
-		for (i = 0; i < ulIterations; i++)
-		{
-			size = (rand() % (uMaxBlockSize - uMinBlockSize)) + uMinBlockSize;
--			if (mp == save_start)
-+			if (mp == save_start)
-			{
-				while (mp < save_start)
-					free(*mp++);
-@@ -554,11 +578,17 @@
+@@ -539,11 +552,17 @@
 
 				mp = memory;
 			}
--			else if (!(*mp ++ = (char *)malloc(size)))
-+			else if (!(*mp = (char *)malloc(size)))
+-			else if (!(*mp++ = (char *)malloc(size)))
++				else if (!(*mp = (char *)malloc(size)))
 			{
 				printf("Out of memory\n");
 				_exit (1);
 			}
-+			else
-+			{
-+				char* p = *mp;
-+				p[0] = 0; p[size-1] = 0;
-+				mp++;
-+			}
++				else
++				{
++					char* p = *mp;
++					p[0] = 0; p[size-1] = 0;
++					mp++;
++				}
 		}
 	}
 
-@@ -577,6 +607,7 @@
+@@ -577,14 +596,14 @@
  {
 	char *arg = NULL, *err;
 	unsigned long result;
+-	{
+-		char buf[12];
+-		static char fmt[] = "\n%s [%lu]: ";
+-		fmt[7] = fmtCh;
+-		fprintf_silent(fout, fmt, msg, defaultVal);
+-		if (fgets(buf, 11, fin))
+-			arg = &buf[0];
+-	}
 +#ifndef BENCH
-	{
-		char buf[12];
-		static char fmt[] = "\n%s [%lu]: ";
-@@ -585,6 +616,7 @@
-		if (fgets(buf, 11, fin))
-			arg = &buf[0];
-	}
++	char buf[12];
++	static char fmt[] = "\n%s [%lu]: ";
++	fmt[7] = fmtCh;
++	fprintf_silent(fout, fmt, msg, defaultVal);
++	if (fgets(buf, 11, fin))
++		arg = &buf[0];
 +#endif
 	if (arg && ((result = strtoul(arg, &err, 10)) != 0
 					|| (*err == '\n' && arg != err)))
 	{
-@@ -619,7 +651,7 @@
+@@ -619,7 +638,7 @@
 							 (pthread_startroutine_t)fn, arg) == -1)
 		 return THREAD_NULL;
 
@@ -153,7 +143,7 @@
 	pthread_attr_t attr;
 	pthread_attr_init(&attr);
  #ifdef _AIX
-@@ -654,7 +686,7 @@
+@@ -654,7 +673,7 @@
 	while (tidCnt--)
 		thr_join(0, NULL, NULL);
 
@@ -161,13 +151,3 @@
 +#elif defined(_POSIX_THREADS) || defined(_POSIX_REENTRANT_FUNCTIONS) || defined(__HAIKU__)
 	while (tidCnt--)
 		pthread_join(tids[tidCnt], NULL);
-
-@@ -701,6 +733,8 @@
-	return get_nprocs();
- #elif defined(_SC_NPROCESSORS_ONLN)
-	return sysconf(_SC_NPROCESSORS_ONLN);
-+#elif defined(__HAIKU__)
-+	return sysconf(_SC_NPROCESSORS_ONLN);
-
- #elif defined(_SC_NPROCESSORS_CONF)
-	return sysconf(_SC_NPROCESSORS_CONF);
