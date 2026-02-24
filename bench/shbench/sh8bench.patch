@@ -1,5 +1,5 @@
---- SH8BENCH.C	2026-02-24 11:33:48.649356578 +0000
-+++ sh8bench-new.c	2026-02-24 11:33:48.653356578 +0000
+--- SH8BENCH.C	2026-02-24 12:05:09.973555143 +0000
++++ sh8bench-new.c	2026-02-24 12:09:18.917552340 +0000
 @@ -52,15 +52,18 @@
  #endif /* SYS_MULTI_THREAD */
 
@@ -40,14 +40,16 @@
  {
 	clock_t startCPU;
 	time_t startTime;
-@@ -189,6 +193,16 @@
+@@ -189,6 +193,18 @@
  #endif
 
 	setbuf(stdout, NULL);  /* turn off buffering for output */
 +#ifdef BENCH
 +	fin = stdin;
 +	fout = stdout;
++#ifdef SYS_MULTI_THREAD
 +	defaultThreadCount = GetNumProcessors();
++#endif
 +	if (argc==2) {
 +		char* end;
 +		long l = strtol(argv[1],&end,10);
@@ -57,7 +59,7 @@
 
 	/* @@@ change to use flags specifying which parms are passed */
 
-@@ -200,6 +214,7 @@
+@@ -200,6 +216,7 @@
 		fout = fopen(argv[2], "w");
 	else
 		fout = stdout;
@@ -65,7 +67,7 @@
 
 	if (argc > 3)
 		ulHeapSize = atol(argv[3]);
-@@ -215,15 +230,12 @@
+@@ -215,15 +232,12 @@
 	if (argc > 5)
 		ulThreadCount = atol(argv[5]);
 	else
@@ -84,7 +86,7 @@
  #endif /* SYS_MULTI_THREAD */
 
 	/* @@@
-@@ -386,6 +398,7 @@
+@@ -386,6 +400,7 @@
 		fclose(fin);
 	if (fout != stdout)
 		fclose(fout);
@@ -92,26 +94,26 @@
  }
 
 
-@@ -539,11 +552,17 @@
+@@ -539,11 +554,17 @@
 
 				mp = memory;
 			}
 -			else if (!(*mp++ = (char *)malloc(size)))
-+				else if (!(*mp = (char *)malloc(size)))
++			else if (!(*mp = (char *)malloc(size)))
 			{
 				printf("Out of memory\n");
 				_exit (1);
 			}
-+				else
-+				{
-+					char* p = *mp;
-+					p[0] = 0; p[size-1] = 0;
-+					mp++;
-+				}
++			else
++			{
++				char* p = *mp;
++				p[0] = 0; p[size-1] = 0;
++				mp++;
++			}
 		}
 	}
 
-@@ -571,20 +590,21 @@
+@@ -571,20 +592,21 @@
 	MemPoolCheck(MemDefaultPool);
 	MemPoolCheck(0);
  #endif
@@ -141,7 +143,7 @@
 	if (arg && ((result = strtoul(arg, &err, 10)) != 0
 					|| (*err == '\n' && arg != err)))
 	{
-@@ -619,7 +639,7 @@
+@@ -619,7 +641,7 @@
 							 (pthread_startroutine_t)fn, arg) == -1)
 		 return THREAD_NULL;
 
@@ -150,7 +152,7 @@
 	pthread_attr_t attr;
 	pthread_attr_init(&attr);
  #ifdef _AIX
-@@ -654,7 +674,7 @@
+@@ -654,7 +676,7 @@
 	while (tidCnt--)
 		thr_join(0, NULL, NULL);
 

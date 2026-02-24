@@ -1,5 +1,5 @@
---- sh6bench.c	2026-02-24 11:33:48.525356579 +0000
-+++ sh6bench-new.c	2026-02-24 11:33:48.525356579 +0000
+--- sh6bench.c	2026-02-24 11:57:30.969560311 +0000
++++ sh6bench-new.c	2026-02-24 12:09:31.737552195 +0000
 @@ -50,17 +50,24 @@
  #endif /* SYS_MULTI_THREAD */
 
@@ -45,14 +45,16 @@
  {
 	clock_t startCPU;
 	time_t startTime;
-@@ -195,6 +203,16 @@
+@@ -195,6 +203,18 @@
  #endif
 
 	setbuf(stdout, NULL);  /* turn off buffering for output */
 +#ifdef BENCH
 +	fin = stdin;
 +	fout = stdout;
++#ifdef SYS_MULTI_THREAD
 +	defaultThreadCount = GetNumProcessors();
++#endif
 +	if (argc==2) {
 +		char* end;
 +		long l = strtol(argv[1],&end,10);
@@ -62,7 +64,7 @@
 
 	if (argc > 1)
 		fin = fopen(argv[1], "r");
-@@ -204,6 +222,7 @@
+@@ -204,6 +224,7 @@
 		fout = fopen(argv[2], "w");
 	else
 		fout = stdout;
@@ -70,7 +72,7 @@
 
 	ulCallCount = promptAndRead("call count", ulCallCount, 'u');
 	uMinBlockSize = (unsigned)promptAndRead("min block size",uMinBlockSize,'u');
-@@ -253,7 +272,7 @@
+@@ -253,7 +274,7 @@
 		}
  #endif /* WIN32 */
 
@@ -79,7 +81,7 @@
 
 		if (uThreadCount < 1)
 			uThreadCount = 1;
-@@ -299,6 +318,7 @@
+@@ -299,6 +320,7 @@
 		fclose(fin);
 	if (fout != stdout)
 		fclose(fout);
@@ -87,7 +89,7 @@
  }
 
  void doBench(void *arg)
-@@ -334,11 +354,17 @@
+@@ -334,11 +356,17 @@
 			while (iterations--)
 			{
 
@@ -106,7 +108,7 @@
 
 	  /* while allocating skip over that portion of the buffer that still
 	     holds pointers from the previous cycle
-@@ -387,14 +413,14 @@
+@@ -387,14 +415,14 @@
  {
 	char *arg = NULL, *err;
 	unsigned long result;
@@ -129,7 +131,7 @@
 	if (arg && ((result = strtoul(arg, &err, 10)) != 0
 					|| (*err == '\n' && arg != err)))
 	{
-@@ -429,7 +455,7 @@
+@@ -429,7 +457,7 @@
 							 (pthread_startroutine_t)fn, arg) == -1)
 		 return THREAD_NULL;
 
@@ -138,7 +140,7 @@
 	pthread_attr_t attr;
 	pthread_attr_init(&attr);
  #ifdef _AIX
-@@ -462,7 +488,7 @@
+@@ -462,7 +490,7 @@
 	while (tidCnt--)
 		thr_join(0, NULL, NULL);
 
