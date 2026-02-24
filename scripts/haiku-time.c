@@ -45,8 +45,6 @@ int main(int argc, char** argv) {
 
     struct rusage start_ru;
     getrusage(RUSAGE_CHILDREN, &start_ru);
-    system_info start_si;
-    get_system_info(&start_si);
     bigtime_t start_real = system_time();
 
     pid_t pid = fork();
@@ -62,7 +60,7 @@ int main(int argc, char** argv) {
 
     size_t peak_rss = 0;
     int status = 0;
-    while (waitpid(pid, &status, WNOHANG) == 0) {
+    while (1) {
         team_info ti;
         if (get_team_info(pid, &ti) == B_OK) {
             size_t current_rss = 0;
@@ -73,14 +71,13 @@ int main(int argc, char** argv) {
             }
             if (current_rss > peak_rss) peak_rss = current_rss;
         }
+        if (waitpid(pid, &status, WNOHANG) != 0) break;
         usleep(20000); // Poll every 20ms
     }
 
     bigtime_t end_real = system_time();
     struct rusage end_ru;
     getrusage(RUSAGE_CHILDREN, &end_ru);
-    system_info end_si;
-    get_system_info(&end_si);
 
     double elapsed = (end_real - start_real) / 1000000.0;
     double user_time = (end_ru.ru_utime.tv_sec - start_ru.ru_utime.tv_sec) +
@@ -95,10 +92,6 @@ int main(int argc, char** argv) {
     /* Fallback for older Haiku where rusage fields are 0 */
     if (max_rss <= 0) {
         max_rss = (long)(peak_rss / 1024);
-    }
-    if (minflt <= 0 && majflt <= 0) {
-        minflt = (long)(end_si.page_faults - start_si.page_faults);
-        majflt = 0;
     }
 
     if (outfile && format) {
