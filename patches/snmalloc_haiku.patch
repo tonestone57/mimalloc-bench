@@ -1,0 +1,17 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index cad25ef..5af2fe8 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -550,11 +550,11 @@ if(NOT SNMALLOC_HEADER_ONLY_LIBRARY)
+       SNMALLOC_CHECK_LOADS=$<IF:$<BOOL:${SNMALLOC_CHECK_LOADS}>,true,false>)
+     target_compile_definitions(${name} PRIVATE
+       SNMALLOC_PAGEID=$<IF:$<BOOL:${SNMALLOC_PAGEID}>,true,false>)
+
+     if(MSVC)
+-    else()
++    elseif(NOT CMAKE_SYSTEM_NAME STREQUAL "Haiku")
+       # We can't do --nostdlib++ as we are using exceptions, but we
+       # can make it a static dependency, which we aren't really using
+       # as the interesting stuff for exceptions is in libgcc_s
+       target_link_options(${name} PRIVATE -static-libstdc++)
+     endif()
