@@ -60,7 +60,7 @@ int main(int argc, char** argv) {
 
     size_t peak_rss = 0;
     int status = 0;
-    while (waitpid(pid, &status, WNOHANG) == 0) {
+    while (1) {
         team_info ti;
         if (get_team_info(pid, &ti) == B_OK) {
             size_t current_rss = 0;
@@ -71,6 +71,7 @@ int main(int argc, char** argv) {
             }
             if (current_rss > peak_rss) peak_rss = current_rss;
         }
+        if (waitpid(pid, &status, WNOHANG) != 0) break;
         usleep(20000); // Poll every 20ms
     }
 
