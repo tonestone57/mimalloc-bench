@@ -1,6 +1,15 @@
 --- src/tests/proc_maps_iterator_test.cc
 +++ src/tests/proc_maps_iterator_test.cc
-@@ -69,6 +69,16 @@
+@@ -39,7 +39,7 @@
+ #include "base/generic_writer.h"
+ #include "gtest/gtest.h"
+
+-#if defined __ELF__
++#if defined __ELF__ && !defined __HAIKU__
+ #include <link.h>
+ #define PRINT_DL_PHDRS
+ #endif
+@@ -68,6 +68,16 @@ TEST(ProcMapsIteratorTest, ForEachMapping) {
 
  #ifdef PRINT_DL_PHDRS
 
