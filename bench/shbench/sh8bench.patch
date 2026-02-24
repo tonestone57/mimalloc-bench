@@ -84,7 +84,7 @@
 +		ulThreadCount = promptAndRead("threads", defaultThreadCount, 'u');
 
 	if (argc > 6)
-		ulForeignAllocCount = atol(argv[5]);
+		ulForeignAllocCount = atol(argv[6]);
 @@ -240,7 +255,7 @@
 		void *threadArg = NULL;
 
