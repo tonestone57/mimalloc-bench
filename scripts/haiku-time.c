@@ -50,6 +50,10 @@ int main(int argc, char** argv) {
     bigtime_t start_real = system_time();
 
     pid_t pid = fork();
+    if (pid < 0) {
+        perror("fork");
+        return 1;
+    }
     if (pid == 0) {
         execvp(argv[cmd_idx], &argv[cmd_idx]);
         perror("execvp");
@@ -57,7 +61,7 @@ int main(int argc, char** argv) {
     }
 
     size_t peak_rss = 0;
-    int status;
+    int status = 0;
     while (waitpid(pid, &status, WNOHANG) == 0) {
         team_info ti;
         if (get_team_info(pid, &ti) == B_OK) {
