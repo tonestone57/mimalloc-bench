@@ -1,5 +1,5 @@
---- SH8BENCH.C	2026-02-24 12:05:09.973555143 +0000
-+++ sh8bench-new.c	2026-02-24 12:09:18.917552340 +0000
+--- a/SH8BENCH.C	2026-02-24 12:10:48.305551333 +0000
++++ b/sh8bench-new.c	2026-02-24 16:55:10.204940378 +0000
 @@ -52,15 +52,18 @@
  #endif /* SYS_MULTI_THREAD */
 
@@ -132,8 +132,8 @@
 -		if (fgets(buf, 11, fin))
 -			arg = &buf[0];
 -	}
-+#ifndef BENCH
 +	char buf[12];
++#ifndef BENCH
 +	static char fmt[] = "\n%s [%lu]: ";
 +	fmt[7] = fmtCh;
 +	fprintf_silent(fout, fmt, msg, defaultVal);

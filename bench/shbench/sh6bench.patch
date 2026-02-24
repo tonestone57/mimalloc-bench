@@ -1,5 +1,5 @@
---- sh6bench.c	2026-02-24 11:57:30.969560311 +0000
-+++ sh6bench-new.c	2026-02-24 12:09:31.737552195 +0000
+--- a/sh6bench.c	2026-02-24 12:10:48.181551335 +0000
++++ b/sh6bench-new.c	2026-02-24 16:54:59.512940499 +0000
 @@ -50,17 +50,24 @@
  #endif /* SYS_MULTI_THREAD */
 
@@ -16,7 +16,8 @@
  #include <unistd.h>
  #ifdef SYS_MULTI_THREAD
  #if defined(__hpux) || defined(__osf__) || defined(_AIX) || defined(sgi) \
-	|| defined(__DGUX__) || defined(__linux__)
+-	|| defined(__DGUX__) || defined(__linux__)
++	|| defined(__DGUX__) || defined(__linux__) || defined(__HAIKU__)
  #define _INCLUDE_POSIX_SOURCE
 +#ifndef __HAIKU__
  #include <sys/signal.h>
@@ -120,8 +121,8 @@
 -		if (fgets(buf, 11, fin))
 -			arg = &buf[0];
 -	}
-+#ifndef BENCH
 +	char buf[12];
++#ifndef BENCH
 +	static char fmt[] = "\n%s [%lu]: ";
 +	fmt[7] = fmtCh;
 +	fprintf_silent(fout, fmt, msg, defaultVal);
