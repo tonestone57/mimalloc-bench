@@ -1,5 +1,5 @@
---- sh6bench.c.orig	2026-02-24 11:00:03.309379381 +0000
-+++ sh6bench-new.c	2026-02-24 11:00:03.309379381 +0000
+--- sh6bench.c	2026-02-24 11:11:12.565371846 +0000
++++ sh6bench-new.c	2026-02-24 11:11:12.565371846 +0000
 @@ -50,17 +50,24 @@
  #endif /* SYS_MULTI_THREAD */
 
@@ -16,8 +16,7 @@
  #include <unistd.h>
  #ifdef SYS_MULTI_THREAD
  #if defined(__hpux) || defined(__osf__) || defined(_AIX) || defined(sgi) \
--	|| defined(__DGUX__) || defined(__linux__)
-+	|| defined(__DGUX__) || defined(__linux__) || defined(__HAIKU__)
+	|| defined(__DGUX__) || defined(__linux__)
  #define _INCLUDE_POSIX_SOURCE
 +#ifndef __HAIKU__
  #include <sys/signal.h>

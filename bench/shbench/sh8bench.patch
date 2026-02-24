@@ -1,5 +1,5 @@
---- SH8BENCH.C.orig	2026-02-24 11:00:03.429379380 +0000
-+++ sh8bench-new.c	2026-02-24 11:00:03.433379380 +0000
+--- SH8BENCH.C	2026-02-24 11:11:12.689371845 +0000
++++ sh8bench-new.c	2026-02-24 11:11:12.689371845 +0000
 @@ -52,15 +52,18 @@
  #endif /* SYS_MULTI_THREAD */
 
@@ -97,17 +97,17 @@
 				mp = memory;
 			}
 -			else if (!(*mp++ = (char *)malloc(size)))
-+			else if (!(*mp = (char *)malloc(size)))
++				else if (!(*mp = (char *)malloc(size)))
 			{
 				printf("Out of memory\n");
 				_exit (1);
 			}
-+			else
-+			{
-+				char* p = *mp;
-+				p[0] = 0; p[size-1] = 0;
-+				mp++;
-+			}
++				else
++				{
++					char* p = *mp;
++					p[0] = 0; p[size-1] = 0;
++					mp++;
++				}
 		}
 	}
 
