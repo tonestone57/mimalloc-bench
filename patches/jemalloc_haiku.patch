@@ -11,3 +11,38 @@ index 983027c8..21d59b91 100644
  #    include <sys/syscall.h>
  #    if !defined(SYS_write) && defined(__NR_write)
  #      define SYS_write __NR_write
+diff --git a/src/background_thread.c b/src/background_thread.c
+index 3bb8d26c..ac856714 100644
+--- a/src/background_thread.c
++++ b/src/background_thread.c
+@@ -99,6 +99,8 @@ set_current_thread_affinity(int cpu) {
+
+ #if defined(JEMALLOC_HAVE_SCHED_SETAFFINITY)
+	return (sched_setaffinity(0, sizeof(cpu_set_t), &cpuset) != 0);
++#elif defined(__HAIKU__)
++	return false;
+ #else
+ #  ifndef __NetBSD__
+	int ret = pthread_setaffinity_np(pthread_self(), sizeof(cpuset_t),
+diff --git a/src/jemalloc.c b/src/jemalloc.c
+index 7655de4e..d5668149 100644
+--- a/src/jemalloc.c
++++ b/src/jemalloc.c
+@@ -721,7 +721,7 @@ malloc_ncpus(void) {
+	SYSTEM_INFO si;
+	GetSystemInfo(&si);
+	result = si.dwNumberOfProcessors;
+-#elif defined(CPU_COUNT)
++#elif defined(CPU_COUNT) && !defined(__HAIKU__)
+	/*
+	 * glibc >= 2.6 has the CPU_COUNT macro.
+	 *
+@@ -769,7 +769,7 @@ malloc_cpu_count_is_deterministic()
+	if (cpu_onln != cpu_conf) {
+		return false;
+	}
+-#  if defined(CPU_COUNT)
++#  if defined(CPU_COUNT) && !defined(__HAIKU__)
+ #    if defined(__FreeBSD__) || defined(__DragonFly__)
+	cpuset_t set;
+ #    else
