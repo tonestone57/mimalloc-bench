@@ -24,7 +24,7 @@ index 82843a3..a32849b 100644
 
  ## Build a debug version of the library
 diff --git a/src/iso_alloc.c b/src/iso_alloc.c
-index a210b64..f500a8c 100644
+index 5e1f8fa..c291d02 100644
 --- a/src/iso_alloc.c
 +++ b/src/iso_alloc.c
 @@ -13,7 +13,7 @@
@@ -59,11 +59,10 @@ index 408c92b..e3a50b5 100644
      arc4random_buf(&val, sizeof(val));
  #endif
 diff --git a/src/iso_alloc_sanity.c b/src/iso_alloc_sanity.c
-index 8e46123..d949216 100644
+index b8b38aa..4d97204 100644
 --- a/src/iso_alloc_sanity.c
 +++ b/src/iso_alloc_sanity.c
 @@ -13,7 +13,7 @@
- #if THREAD_SUPPORT
  #if USE_SPINLOCK
  atomic_flag sane_cache_flag;
  #else

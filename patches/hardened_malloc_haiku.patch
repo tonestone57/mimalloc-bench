@@ -1,16 +1,19 @@
-diff --git a/Makefile b/Makefile
-index b5408a2..e124c64 100644
---- a/Makefile
-+++ b/Makefile
-@@ -1,3 +1,8 @@
-+ifeq ($(shell uname -s), Haiku)
-+    CFLAGS += -ftls-model=global-dynamic
-+    CXXFLAGS += -ftls-model=global-dynamic
-+endif
-+
- VARIANT := default
+diff --git a/h_malloc.c b/h_malloc.c
+index 2d995ef..42dff4e 100644
+--- a/h_malloc.c
++++ b/h_malloc.c
+@@ -61,7 +61,11 @@
+ #define CACHELINE_SIZE 64
 
- ifneq ($(VARIANT),)
+ #if N_ARENA > 1
++#ifdef __HAIKU__
++__attribute__((tls_model("global-dynamic")))
++#else
+ __attribute__((tls_model("initial-exec")))
++#endif
+ static thread_local unsigned thread_arena = N_ARENA;
+ static atomic_uint thread_arena_counter = 0;
+ #else
 diff --git a/memory.c b/memory.c
 index 2d995ef..42dff4e 100644
 --- a/memory.c

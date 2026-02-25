@@ -1,11 +1,17 @@
+diff --git a/include/slimguard.h b/include/slimguard.h
+index d63f1c7..d246698 100644
 --- a/include/slimguard.h
 +++ b/include/slimguard.h
-@@ -16,6 +16,33 @@
+@@ -15,6 +15,37 @@
  #include <time.h>
  #include <math.h>
 
 +#ifdef __HAIKU__
 +#include <stdarg.h>
++#include <stdlib.h>
++#include <stdio.h>
++#include <string.h>
++#include <errno.h>
 +static inline void warnx(const char *fmt, ...) {
 +    va_list ap;
 +    va_start(ap, fmt);
@@ -36,6 +42,8 @@
  #define ETP (8) // entropy to 8 bits
  #define GP (10) // 1 guard page per GP pages
  #define BKT (1 << ETP) // bucket size
+diff --git a/src/slimguard-mmap.c b/src/slimguard-mmap.c
+index fa0a533..b2ec78e 100644
 --- a/src/slimguard-mmap.c
 +++ b/src/slimguard-mmap.c
 @@ -1,7 +1,9 @@
