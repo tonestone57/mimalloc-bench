@@ -423,19 +423,32 @@ if test -f ./build-bench-env.sh; then
     setup_rocksdb=0 # RocksDB uses fallocate/sync_file_range, Linux-specific
     # rbstress, sh6bench, sh8bench all work on Haiku; no overrides needed.
 
+    # Ensure essential tools for the script itself to function on Haiku.
+    ensure_haiku_tool git git
+    ensure_haiku_tool wget wget
+    ensure_haiku_tool unzip unzip
+    ensure_haiku_tool tar tar
+    ensure_haiku_tool patch patch
+    ensure_haiku_tool dos2unix dos2unix
+    ensure_haiku_tool bc bc
+
     if test "$setup_packages" = "1"; then
       echo ""
-      echo "> pkgman install -y gcc llvm12_clang cmake ninja python3.14 automake libtool autoconf git wget dos2unix bc gmp_devel sed coreutils ruby libatomic_ops_devel time ghostscript_gpl snappy_devel readline_devel"
+      echo "> pkgman install -y gcc llvm12_clang cmake ninja python3.14 automake libtool autoconf git wget unzip dos2unix bc gmp_devel sed coreutils ruby libatomic_ops_devel time ghostscript_gpl snappy_devel readline_devel"
       echo ""
       pkgman install -y gcc llvm12_clang cmake ninja python3.14 automake libtool autoconf \
-        git wget dos2unix bc gmp_devel sed coreutils \
+        git wget unzip dos2unix bc gmp_devel sed coreutils \
         ruby libatomic_ops_devel time \
         ghostscript_gpl snappy_devel readline_devel
 
       haikuinstallbazel
+      echo "Haiku: packages installed."
+    fi
+
+    if [ ! -x scripts/haiku-time ]; then
+      ensure_haiku_tool gcc gcc
       echo "Haiku: building scripts/haiku-time..."
       gcc -O2 -o scripts/haiku-time scripts/haiku-time.c
-      echo "Haiku: packages installed."
     fi
   fi
 else
