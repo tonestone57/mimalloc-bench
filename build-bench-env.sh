@@ -328,18 +328,6 @@ function phase {
   echo
 }
 
-function ensure_haiku_tool { # command, package
-  if [ "$haiku" = "1" ] && [ "$setup_packages" = "0" ]; then
-    if ! command -v "$1" > /dev/null; then
-      echo "> pkgman install -y $2"
-      pkgman install -y "$2"
-      if [ "$1" = "python3.14" ]; then
-        PYTHON="python3.14"
-      fi
-    fi
-  fi
-}
-
 function aptinstall {
   echo ""
   echo "> $SUDO apt install $1"
@@ -404,6 +392,18 @@ if test -f ./build-bench-env.sh; then
   echo ""
 
   if test "$haiku" = "1"; then
+    function ensure_haiku_tool { # command, package
+      if [ "$setup_packages" = "0" ]; then
+        if ! command -v "$1" > /dev/null; then
+          echo "> pkgman install -y $2"
+          pkgman install -y "$2"
+          if [ "$1" = "python3.14" ]; then
+            PYTHON="python3.14"
+          fi
+        fi
+      fi
+    }
+
     # Disable allocators that require Linux/glibc-specific APIs on Haiku.
     setup_dh=0
     setup_fg=0
@@ -423,19 +423,37 @@ if test -f ./build-bench-env.sh; then
     setup_rocksdb=0 # RocksDB uses fallocate/sync_file_range, Linux-specific
     # rbstress, sh6bench, sh8bench all work on Haiku; no overrides needed.
 
+    # Essential tools for the script itself to function on Haiku.
+    haiku_essential="git wget unzip tar patch dos2unix bc"
+    haiku_missing=""
+    for tool in $haiku_essential; do
+      if ! command -v "$tool" > /dev/null; then
+        haiku_missing="$haiku_missing $tool"
+      fi
+    done
+
+    if [ -n "$haiku_missing" ] && [ "$setup_packages" = "0" ]; then
+      echo "> pkgman install -y $haiku_missing"
+      pkgman install -y $haiku_missing
+    fi
+
     if test "$setup_packages" = "1"; then
       echo ""
-      echo "> pkgman install -y gcc llvm12_clang cmake ninja python3.14 automake libtool autoconf git wget dos2unix bc gmp_devel sed coreutils ruby libatomic_ops_devel time ghostscript_gpl snappy_devel readline_devel"
+      echo "> pkgman install -y gcc llvm12_clang cmake ninja python3.14 automake libtool autoconf $haiku_essential gmp_devel sed coreutils ruby libatomic_ops_devel time ghostscript_gpl snappy_devel readline_devel"
       echo ""
       pkgman install -y gcc llvm12_clang cmake ninja python3.14 automake libtool autoconf \
-        git wget dos2unix bc gmp_devel sed coreutils \
+        $haiku_essential gmp_devel sed coreutils \
         ruby libatomic_ops_devel time \
         ghostscript_gpl snappy_devel readline_devel
 
       haikuinstallbazel
+      echo "Haiku: packages installed."
+    fi
+
+    if [ ! -x scripts/haiku-time ]; then
+      ensure_haiku_tool gcc gcc
       echo "Haiku: building scripts/haiku-time..."
       gcc -O2 -o scripts/haiku-time scripts/haiku-time.c
-      echo "Haiku: packages installed."
     fi
   fi
 else
