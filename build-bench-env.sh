@@ -46,6 +46,11 @@ fi
 
 SHA256SUM_CMD="sha256sum"
 PYTHON="python3"
+if [ "$haiku" = "1" ]; then
+  if command -v python3.14 > /dev/null; then
+    PYTHON="python3.14"
+  fi
+fi
 if test "$darwin" = "1"; then
   SHA256SUM_CMD="shasum -a 256"
 fi
@@ -313,22 +318,6 @@ while : ; do
   shift
 done
 
-if test -f ./build-bench-env.sh; then
-  echo ""
-  echo "use '-h' to see all options"
-  echo "use 'all' to build all allocators"
-  echo ""
-  echo "building with $procs threads"
-  echo "--------------------------------------------"
-  echo ""
-else
-  echo "error: must run from the toplevel mimalloc-bench directory!"
-  exit 1
-fi
-
-mkdir -p extern
-readonly devdir="$curdir/extern"
-
 function phase {
   cd "$curdir"
   echo
@@ -339,58 +328,15 @@ function phase {
   echo
 }
 
-function write_version {  # name, git-tag, repo
-  commit=$(git log -n1 --format=format:"%h")
-  echo "$1: $2, $commit, $3" > "$devdir/version_$1.txt"
-}
-
-function partial_checkout {  # name, git-tag, git repo, directory to download
-  phase "build $1: version $2"
-  pushd $devdir
-  if test "$rebuild" = "1"; then
-    rm -rf "$1"
-  fi
-  if test -d "$1"; then
-    echo "$devdir/$1 already exists; no need to git clone"
-    cd "$1"
-  else
-    mkdir "$1"
-    cd "$1"
-    git init
-    git remote add origin $3
-    git config extensions.partialClone origin
-    git sparse-checkout set $4
-  fi
-  git fetch --depth=1 --filter=blob:none origin $2
-  git checkout $2
-  git reset origin/$2 --hard
-  write_version $1 $2 $3
-}
-
-function checkout {  # name, git-tag, git repo, options
-  phase "build $1: version $2"
-  pushd $devdir
-  if test "$rebuild" = "1"; then
-    rm -rf "$1"
-  fi
-  if test -d "$1"; then
-    echo "$devdir/$1 already exists; no need to git clone"
-  else
-    git clone $4 $3 $1
-  fi
-  cd "$1"
-  git reset --hard HEAD
-  git checkout $2
-  write_version $1 $2 $3
-}
-
-function check_checksum {  # name, sha256sum
-  if (echo "$2  $1" | $SHA256SUM_CMD -c >/dev/null 2>&1); then
-    echo "$1 has correct checksum"
-  else
-    echo "$1 has wrong checksum"
-    echo "$2 was expected"
-    $SHA256SUM_CMD $1
+function ensure_haiku_tool { # command, package
+  if [ "$haiku" = "1" ] && [ "$setup_packages" = "0" ]; then
+    if ! command -v "$1" > /dev/null; then
+      echo "> pkgman install -y $2"
+      pkgman install -y "$2"
+      if [ "$1" = "python3.14" ]; then
+        PYTHON="python3.14"
+      fi
+    fi
   fi
 }
 
@@ -448,6 +394,113 @@ function dnfinstallbazel {
   dnfinstall bazel5
 }
 
+if test -f ./build-bench-env.sh; then
+  echo ""
+  echo "use '-h' to see all options"
+  echo "use 'all' to build all allocators"
+  echo ""
+  echo "building with $procs threads"
+  echo "--------------------------------------------"
+  echo ""
+
+  if test "$haiku" = "1"; then
+    # Disable allocators that require Linux/glibc-specific APIs on Haiku.
+    setup_dh=0
+    setup_fg=0
+    setup_gd=0
+    setup_hd=0
+    # setup_hm=0
+    setup_lt=0
+    setup_sm=0
+    setup_scudo=0
+    setup_mesh=0
+    setup_nomesh=0
+    setup_tcg=0
+    setup_lp=0
+    setup_pa=0
+    setup_linux=0   # Linux kernel build -- not applicable on Haiku
+    setup_redis=0   # Redis requires epoll/eventfd, not ported to Haiku
+    setup_rocksdb=0 # RocksDB uses fallocate/sync_file_range, Linux-specific
+    # rbstress, sh6bench, sh8bench all work on Haiku; no overrides needed.
+
+    if test "$setup_packages" = "1"; then
+      echo ""
+      echo "> pkgman install -y gcc llvm12_clang cmake ninja python3.14 automake libtool autoconf git wget dos2unix bc gmp_devel sed coreutils ruby libatomic_ops_devel time ghostscript_gpl snappy_devel readline_devel"
+      echo ""
+      pkgman install -y gcc llvm12_clang cmake ninja python3.14 automake libtool autoconf \
+        git wget dos2unix bc gmp_devel sed coreutils \
+        ruby libatomic_ops_devel time \
+        ghostscript_gpl snappy_devel readline_devel
+
+      haikuinstallbazel
+      echo "Haiku: building scripts/haiku-time..."
+      gcc -O2 -o scripts/haiku-time scripts/haiku-time.c
+      echo "Haiku: packages installed."
+    fi
+  fi
+else
+  echo "error: must run from the toplevel mimalloc-bench directory!"
+  exit 1
+fi
+
+mkdir -p extern
+readonly devdir="$curdir/extern"
+
+function write_version {  # name, git-tag, repo
+  commit=$(git log -n1 --format=format:"%h")
+  echo "$1: $2, $commit, $3" > "$devdir/version_$1.txt"
+}
+
+function partial_checkout {  # name, git-tag, git repo, directory to download
+  phase "build $1: version $2"
+  pushd $devdir
+  if test "$rebuild" = "1"; then
+    rm -rf "$1"
+  fi
+  if test -d "$1"; then
+    echo "$devdir/$1 already exists; no need to git clone"
+    cd "$1"
+  else
+    mkdir "$1"
+    cd "$1"
+    git init
+    git remote add origin $3
+    git config extensions.partialClone origin
+    git sparse-checkout set $4
+  fi
+  git fetch --depth=1 --filter=blob:none origin $2
+  git checkout $2
+  git reset origin/$2 --hard
+  write_version $1 $2 $3
+}
+
+function checkout {  # name, git-tag, git repo, options
+  phase "build $1: version $2"
+  pushd $devdir
+  if test "$rebuild" = "1"; then
+    rm -rf "$1"
+  fi
+  if test -d "$1"; then
+    echo "$devdir/$1 already exists; no need to git clone"
+  else
+    git clone $4 $3 $1
+  fi
+  cd "$1"
+  git reset --hard HEAD
+  git checkout $2
+  write_version $1 $2 $3
+}
+
+function check_checksum {  # name, sha256sum
+  if (echo "$2  $1" | $SHA256SUM_CMD -c >/dev/null 2>&1); then
+    echo "$1 has correct checksum"
+  else
+    echo "$1 has wrong checksum"
+    echo "$2 was expected"
+    $SHA256SUM_CMD $1
+  fi
+}
+
 if test "$all" = "1"; then
   if test "$rebuild" = "1"; then
     phase "clean $devdir for a full rebuild"
@@ -488,58 +541,7 @@ if test "$setup_packages" = "1"; then
       ghostscript bazelisk gflags snappy"
   elif grep -q 'Arch Linux' /etc/os-release 2>/dev/null; then
     $SUDO pacman -S dos2unix wget cmake ninja automake libtool time gmp sed ghostscript z3 bazelisk gflags snappy python-six
-  elif test "$haiku" = "1"; then
-    # ruby       -- needed for rbstress benchmark
-    # time       -- GNU time, needed for -f format string in bench.sh
-    # sed        -- GNU sed, needed for -E and -i.bak in bench.sh result parsing
-    # dos2unix   -- needed to patch shbench source files
-    echo ""
-    echo "> pkgman install -y gcc llvm12_clang cmake ninja python3.14 automake libtool autoconf git wget dos2unix bc gmp_devel sed coreutils ruby libatomic_ops_devel time ghostscript_gpl snappy_devel readline_devel"
-    echo ""
-    pkgman install -y gcc llvm12_clang cmake ninja python3.14 automake libtool autoconf \
-      git wget dos2unix bc gmp_devel sed coreutils \
-      ruby libatomic_ops_devel time \
-      ghostscript_gpl snappy_devel readline_devel
-    haikuinstallbazel
-    # Allocators not expected to build on Haiku:
-    #   dh   -- uses __malloc_hook (glibc internal)
-    #   fg   -- uses execinfo.h (GNU extension)
-    #   gd   -- glibc-specific internals
-    #   hd   -- glibc-specific internals
-    #   hm   -- uses sys/prctl.h and sys/random.h (Linux-specific)
-    #   lt   -- uses mallinfo (glibc)
-    #   sm   -- uses MADV_HUGEPAGE (Linux-specific)
-    #   scudo -- uses sys/auxv.h (Linux-specific)
-    #   mesh/nomesh -- uses Linux mmap extensions
-    #   tcg  -- requires Bazel (unavailable on Haiku)
-    #   lp   -- uses pthread_getname_np (not on Haiku)
-  #   pa   -- requires cipd (unavailable on Haiku)
-    echo "Haiku: packages installed."
-
-    echo "Haiku: building scripts/haiku-time..."
-    gcc -O2 -o scripts/haiku-time scripts/haiku-time.c
   fi
-fi
-
-# Disable allocators that require Linux/glibc-specific APIs on Haiku.
-if test "$haiku" = "1"; then
-  setup_dh=0
-  setup_fg=0
-  setup_gd=0
-  setup_hd=0
-  # setup_hm=0
-  setup_lt=0
-  setup_sm=0
-  setup_scudo=0
-  setup_mesh=0
-  setup_nomesh=0
-  setup_tcg=0
-  setup_lp=0
-  setup_pa=0
-  setup_linux=0   # Linux kernel build -- not applicable on Haiku
-  setup_redis=0   # Redis requires epoll/eventfd, not ported to Haiku
-  setup_rocksdb=0 # RocksDB uses fallocate/sync_file_range, Linux-specific
-  # rbstress, sh6bench, sh8bench all work on Haiku; no overrides needed.
 fi
 
 if test "$setup_hm" = "1"; then
@@ -599,6 +601,9 @@ fi
 
 if test "$setup_scudo" = "1"; then
   partial_checkout scudo $version_scudo https://github.com/llvm/llvm-project "compiler-rt/lib/scudo/standalone"
+  if test "$haiku" = "1"; then
+    ensure_haiku_tool clang++ llvm12_clang
+  fi
   cd "compiler-rt/lib/scudo/standalone"
   # Set compiler and flags based on platform
   if [ -z "$darwin" ] && [ -z "$haiku" ]; then
@@ -697,6 +702,7 @@ if test "$setup_tbb" = "1"; then
   checkout tbb $version_tbb https://github.com/oneapi-src/oneTBB
   if test "$haiku" = "1"; then
     patch -p1 -l -N < "$curdir/patches/tbb_haiku.patch" || true
+    ensure_haiku_tool cmake cmake
   fi
   cmake -DCMAKE_POLICY_VERSION_MINIMUM=3.10 -DCMAKE_BUILD_TYPE=Release -DTBB_BUILD=OFF -DTBB_TEST=OFF -DTBB_OUTPUT_DIR_BASE=bench .
   make -j $procs
@@ -765,6 +771,10 @@ fi
 if test "$setup_rp" = "1"; then
   checkout rp $version_rp https://github.com/mjansson/rpmalloc
   patch -p1 -l -N < "$curdir/patches/rpmalloc_python313.patch" || true
+  if test "$haiku" = "1"; then
+    ensure_haiku_tool ninja ninja
+    ensure_haiku_tool python3.14 python3.14
+  fi
   if test -f build.ninja; then
     echo "$devdir/rpmalloc is already configured; no need to reconfigure"
   else
@@ -781,6 +791,8 @@ if test "$setup_sn" = "1"; then
   checkout sn $version_sn https://github.com/Microsoft/snmalloc
   if test "$haiku" = "1"; then
     patch -p1 -l -N < "$curdir/patches/snmalloc_haiku.patch" || true
+    ensure_haiku_tool cmake cmake
+    ensure_haiku_tool ninja ninja
   fi
   if test -f release/build.ninja; then
     echo "$devdir/sn is already configured; no need to reconfigure"
@@ -821,6 +833,9 @@ fi
 
 if test "$setup_sc" = "1"; then
   checkout sc $version_sc https://github.com/cksystemsgroup/scalloc
+  if test "$haiku" = "1"; then
+    ensure_haiku_tool python3.14 python3.14
+  fi
   if test -f Makefile; then
     echo "$devdir/scalloc is already configured; no need to reconfigure"
   else
@@ -841,6 +856,7 @@ if test "$setup_mi" = "1"; then
   checkout mi $version_mi https://github.com/microsoft/mimalloc
   if test "$haiku" = "1"; then
     patch -p1 -l -N < "$curdir/patches/mimalloc_haiku.patch" || true
+    ensure_haiku_tool cmake cmake
   fi
 
   echo ""
@@ -867,6 +883,7 @@ if test "$setup_mi2" = "1"; then
   checkout mi2 $version_mi2 https://github.com/microsoft/mimalloc
   if test "$haiku" = "1"; then
     patch -p1 -l -N < "$curdir/patches/mimalloc_haiku.patch" || true
+    ensure_haiku_tool cmake cmake
   fi
 
   echo ""
@@ -924,6 +941,9 @@ if test "$setup_lean" = "1"; then
   phase "build lean $version_lean"
   checkout lean $version_lean https://github.com/leanprover-community/lean
   patch -p1 -l -N < "$curdir/patches/lean_alpine.patch" || true
+  if test "$haiku" = "1"; then
+    ensure_haiku_tool cmake cmake
+  fi
   mkdir -p out/release
   cd out/release
   env CC=gcc CXX="g++" cmake -DCMAKE_POLICY_VERSION_MINIMUM=3.5 ../../src -DCUSTOM_ALLOCATORS=OFF -DLEAN_EXTRA_CXX_FLAGS="-w"
@@ -1008,6 +1028,9 @@ if test "$setup_bench" = "1"; then
 
   phase "build benchmarks"
 
+  if test "$haiku" = "1"; then
+    ensure_haiku_tool cmake cmake
+  fi
   cmake -B out/bench -S bench
   cmake --build out/bench --parallel $procs
 fi
