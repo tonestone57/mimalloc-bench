@@ -1,0 +1,49 @@
+--- a/include/slimguard.h
++++ b/include/slimguard.h
+@@ -16,6 +16,33 @@
+ #include <time.h>
+ #include <math.h>
+
++#ifdef __HAIKU__
++#include <stdarg.h>
++static inline void warnx(const char *fmt, ...) {
++    va_list ap;
++    va_start(ap, fmt);
++    vfprintf(stderr, fmt, ap);
++    va_end(ap);
++    fprintf(stderr, "\n");
++}
++
++static inline void warn(const char *fmt, ...) {
++    va_list ap;
++    int saved_errno = errno;
++    va_start(ap, fmt);
++    vfprintf(stderr, fmt, ap);
++    va_end(ap);
++    fprintf(stderr, ": %s\n", strerror(saved_errno));
++}
++
++static inline void errx(int eval, const char *fmt, ...) {
++    va_list ap;
++    va_start(ap, fmt);
++    vfprintf(stderr, fmt, ap);
++    va_end(ap);
++    fprintf(stderr, "\n");
++    exit(eval);
++}
++#endif
++
+ #define ETP (8) // entropy to 8 bits
+ #define GP (10) // 1 guard page per GP pages
+ #define BKT (1 << ETP) // bucket size
+--- a/src/slimguard-mmap.c
++++ b/src/slimguard-mmap.c
+@@ -1,7 +1,9 @@
+ #include "slimguard-mmap.h"
+ #include "slimguard.h"
+
++#ifndef __HAIKU__
+ #include <err.h>
++#endif
+ #include <sys/mman.h>
+ #include <stdlib.h>

@@ -583,6 +583,9 @@ fi
 
 if test "$setup_ff" = "1"; then
   checkout ff $version_ff https://github.com/bwickman97/ffmalloc
+  if test "$haiku" = "1"; then
+    patch -p1 -l -N < "$curdir/patches/ffmalloc_haiku.patch" || true
+  fi
   make -j $procs
   popd
 fi
@@ -673,6 +676,9 @@ fi
 
 if test "$setup_sg" = "1"; then
   checkout sg $version_sg https://github.com/ssrg-vt/SlimGuard
+  if test "$haiku" = "1"; then
+    patch -p1 -l -N < "$curdir/patches/slimguard_haiku.patch" || true
+  fi
   make -j $procs
   popd
 fi
@@ -743,7 +749,11 @@ if test "$setup_je" = "1"; then
   if test -f config.status; then
     echo "$devdir/jemalloc is already configured; no need to reconfigure"
   else
-    ./autogen.sh --enable-doc=no --enable-static=no --disable-stats
+    je_cfg="--enable-doc=no --enable-static=no --disable-stats"
+    if test "$haiku" = "1"; then
+      je_cfg="$je_cfg --disable-initial-exec-tls"
+    fi
+    ./autogen.sh $je_cfg
   fi
   make -j $procs
   [ "$CI" ] && rm -rf ./src/*.o  # jemalloc has like ~100MiB of object files

@@ -1,3 +1,16 @@
+diff --git a/Makefile b/Makefile
+index b5408a2..e124c64 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1,3 +1,8 @@
++ifeq ($(shell uname -s), Haiku)
++    CFLAGS += -ftls-model=global-dynamic
++    CXXFLAGS += -ftls-model=global-dynamic
++endif
++
+ VARIANT := default
+
+ ifneq ($(VARIANT),)
 diff --git a/memory.c b/memory.c
 index 2d995ef..42dff4e 100644
 --- a/memory.c

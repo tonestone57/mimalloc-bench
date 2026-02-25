@@ -1,0 +1,13 @@
+--- a/ffmalloc.c
++++ b/ffmalloc.c
+@@ -1136,7 +1136,11 @@
+
+ // Returns the index of the large list index to use based on the current CPU
+ static unsigned int get_large_list_index() {
++#ifdef __HAIKU__
++	int cpuId = 0;
++#else
+	int cpuId = sched_getcpu();
++#endif
+	return cpuId < 0 ? 0 : (unsigned int)cpuId % MAX_LARGE_LISTS;
+ }
