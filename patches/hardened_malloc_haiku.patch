@@ -10,7 +10,7 @@ index 2d995ef..42dff4e 100644
 +#else
  __attribute__((tls_model("initial-exec")))
 +#endif
- static _Thread_local unsigned thread_arena = N_ARENA;
+ static thread_local unsigned thread_arena = N_ARENA;
  static atomic_uint thread_arena_counter = 0;
  #else
 diff --git a/memory.c b/memory.c
