@@ -23,6 +23,19 @@ index 82843a3..a32849b 100644
 	$(STRIP)
 
  ## Build a debug version of the library
+diff --git a/src/iso_alloc.c b/src/iso_alloc.c
+index 5e1f8fa..c291d02 100644
+--- a/src/iso_alloc.c
++++ b/src/iso_alloc.c
+@@ -13,7 +13,7 @@
+ #if USE_SPINLOCK
+ atomic_flag root_busy_flag;
+ #else
+-pthread_mutex_t root_busy_mutex;
++pthread_mutex_t root_busy_mutex = PTHREAD_MUTEX_INITIALIZER;
+ #endif
+ /* We cannot initialize this on thread creation so
+  * we can't mmap them somewhere with guard pages but
 diff --git a/src/iso_alloc_random.c b/src/iso_alloc_random.c
 index 408c92b..e3a50b5 100644
 --- a/src/iso_alloc_random.c
@@ -44,4 +57,16 @@ index 408c92b..e3a50b5 100644
 +#elif __NetBSD__ || __HAIKU__
      /* Temporary solution until NetBSD 10 released with getrandom support */
      arc4random_buf(&val, sizeof(val));
+ #endif
+diff --git a/src/iso_alloc_sanity.c b/src/iso_alloc_sanity.c
+index b8b38aa..4d97204 100644
+--- a/src/iso_alloc_sanity.c
++++ b/src/iso_alloc_sanity.c
+@@ -13,7 +13,7 @@
+ #if USE_SPINLOCK
+ atomic_flag sane_cache_flag;
+ #else
+-pthread_mutex_t sane_cache_mutex;
++pthread_mutex_t sane_cache_mutex = PTHREAD_MUTEX_INITIALIZER;
+ #endif
  #endif
