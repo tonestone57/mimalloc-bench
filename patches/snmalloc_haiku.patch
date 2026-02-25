@@ -20,3 +20,21 @@ index cad25ef..e587c9a 100644
        # We can't do --nostdlib++ as we are using exceptions, but we
        # can make it a static dependency, which we aren't really using
        # as the interesting stuff for exceptions is in libgcc_s
+diff --git a/src/snmalloc/pal/pal_haiku.h b/src/snmalloc/pal/pal_haiku.h
+index 9239829..b839818 100644
+--- a/src/snmalloc/pal/pal_haiku.h
++++ b/src/snmalloc/pal/pal_haiku.h
+@@ -36,6 +36,13 @@ namespace snmalloc
+       SNMALLOC_ASSERT(is_aligned_block<page_size>(p, size));
+       posix_madvise(p, size, POSIX_MADV_DONTNEED);
+     }
++
++    static uint64_t get_entropy64()
++    {
++      uint64_t result;
++      arc4random_buf(&result, sizeof(result));
++      return result;
++    }
+   };
+ } // namespace snmalloc
+ #endif
