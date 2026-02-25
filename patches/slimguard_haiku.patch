@@ -2,10 +2,10 @@ diff --git a/include/slimguard.h b/include/slimguard.h
 index d63f1c7..d246698 100644
 --- a/include/slimguard.h
 +++ b/include/slimguard.h
-@@ -15,6 +15,37 @@
+@@ -13,6 +13,39 @@
+ #include <errno.h>
+ #include <string.h>
  #include <time.h>
- #include <math.h>
-
 +#ifdef __HAIKU__
 +#include <stdarg.h>
 +#include <stdlib.h>
@@ -39,14 +39,14 @@ index d63f1c7..d246698 100644
 +}
 +#endif
 +
+ #include <math.h>
+
  #define ETP (8) // entropy to 8 bits
- #define GP (10) // 1 guard page per GP pages
- #define BKT (1 << ETP) // bucket size
 diff --git a/src/slimguard-mmap.c b/src/slimguard-mmap.c
 index fa0a533..b2ec78e 100644
 --- a/src/slimguard-mmap.c
 +++ b/src/slimguard-mmap.c
-@@ -1,7 +1,9 @@
+@@ -1,6 +1,8 @@
  #include "slimguard-mmap.h"
  #include "slimguard.h"
 

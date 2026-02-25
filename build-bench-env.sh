@@ -584,6 +584,7 @@ fi
 if test "$setup_ff" = "1"; then
   checkout ff $version_ff https://github.com/bwickman97/ffmalloc
   if test "$haiku" = "1"; then
+    dos2unix ffmalloc.c
     patch -p1 -l -N < "$curdir/patches/ffmalloc_haiku.patch" || true
   fi
   make -j $procs
