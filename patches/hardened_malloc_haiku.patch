@@ -1,8 +1,9 @@
 diff --git a/h_malloc.c b/h_malloc.c
-index 2d995ef..42dff4e 100644
+index 91159b0..8b2e115 100644
 --- a/h_malloc.c
 +++ b/h_malloc.c
-@@ -60,6 +60,10 @@
+@@ -61,7 +61,11 @@ static_assert(N_ARENA <= 256, "maximum number of arenas is currently 256");
+ #define CACHELINE_SIZE 64
 
  #if N_ARENA > 1
 +#ifdef __HAIKU__
@@ -10,23 +11,24 @@ index 2d995ef..42dff4e 100644
 +#else
  __attribute__((tls_model("initial-exec")))
 +#endif
- static _Thread_local unsigned thread_arena = N_ARENA;
+ static thread_local unsigned thread_arena = N_ARENA;
  static atomic_uint thread_arena_counter = 0;
  #else
 diff --git a/memory.c b/memory.c
 index 2d995ef..42dff4e 100644
 --- a/memory.c
 +++ b/memory.c
-@@ -4,6 +4,8 @@
+@@ -1,7 +1,9 @@
+ #include <errno.h>
 
- #ifdef LABEL_MEMORY
+ #include <sys/mman.h>
 +#ifndef __HAIKU__
  #include <sys/prctl.h>
 +#endif
- #endif
 
  #ifndef PR_SET_VMA
-@@ -112,7 +112,7 @@
+ #define PR_SET_VMA 0x53564d41
+@@ -95,7 +97,7 @@ bool memory_purge(void *ptr, size_t size) {
  }
 
  bool memory_set_name(UNUSED void *ptr, UNUSED size_t size, UNUSED const char *name) {
@@ -36,10 +38,10 @@ index 2d995ef..42dff4e 100644
  #else
      return false;
 diff --git a/random.c b/random.c
-index 8883531..abda53e 100644
+index 8883531..753278f 100644
 --- a/random.c
 +++ b/random.c
-@@ -1,5 +1,9 @@
+@@ -1,13 +1,22 @@
  #include <errno.h>
  #include <string.h>
 
@@ -50,8 +52,10 @@ index 8883531..abda53e 100644
  #include "chacha.h"
  #include "random.h"
  #include "util.h"
-@@ -10,8 +14,12 @@
+
++#ifndef __HAIKU__
  #include <sys/random.h>
++#endif
 
  static void get_random_seed(void *buf, size_t size) {
 +#ifdef __HAIKU__
@@ -60,14 +64,7 @@ index 8883531..abda53e 100644
      while (size) {
          ssize_t r;
 
-         do {
-             r = getrandom(buf, size, 0);
-         } while (r == -1 && errno == EINTR);
-
-         if (r <= 0) {
-             fatal_error("getrandom failed");
-         }
-
+@@ -22,6 +31,7 @@ static void get_random_seed(void *buf, size_t size) {
          buf = (char *)buf + r;
          size -= r;
      }
