@@ -1,7 +1,16 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index cad25ef..e587c9a 100644
+index cad25ef..856cb95 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
+@@ -294,7 +294,7 @@ target_include_directories(snmalloc
+ if(NOT MSVC)
+   find_package(Threads REQUIRED COMPONENTS snmalloc)
+   target_link_libraries(snmalloc INTERFACE
+-    ${CMAKE_THREAD_LIBS_INIT} $<$<CXX_COMPILER_ID:GNU>:atomic>)
++    ${CMAKE_THREAD_LIBS_INIT} $<$<CXX_COMPILER_ID:GNU>:atomic> $<$<PLATFORM_ID:Haiku>:bsd>)
+ endif()
+
+ if (WIN32)
 @@ -532,7 +532,7 @@ if(NOT SNMALLOC_HEADER_ONLY_LIBRARY)
        endif()
 
@@ -21,10 +30,10 @@ index cad25ef..e587c9a 100644
        # can make it a static dependency, which we aren't really using
        # as the interesting stuff for exceptions is in libgcc_s
 diff --git a/src/snmalloc/pal/pal_haiku.h b/src/snmalloc/pal/pal_haiku.h
-index 9239829..b839818 100644
+index bbc9e07..67429df 100644
 --- a/src/snmalloc/pal/pal_haiku.h
 +++ b/src/snmalloc/pal/pal_haiku.h
-@@ -36,6 +36,13 @@ namespace snmalloc
+@@ -37,6 +37,13 @@ namespace snmalloc
        SNMALLOC_ASSERT(is_aligned_block<page_size>(p, size));
        posix_madvise(p, size, POSIX_MADV_DONTNEED);
      }
