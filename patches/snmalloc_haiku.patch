@@ -74,20 +74,18 @@ index cad25ef..0ede398 100644
        # can make it a static dependency, which we aren't really using
        # as the interesting stuff for exceptions is in libgcc_s
 diff --git a/src/snmalloc/pal/pal_haiku.h b/src/snmalloc/pal/pal_haiku.h
-index bbc9e07..121b0a9 100644
+index bbc9e07..39f3605 100644
 --- a/src/snmalloc/pal/pal_haiku.h
 +++ b/src/snmalloc/pal/pal_haiku.h
-@@ -37,6 +37,13 @@ namespace snmalloc
+@@ -37,6 +37,11 @@ namespace snmalloc
        SNMALLOC_ASSERT(is_aligned_block<page_size>(p, size));
        posix_madvise(p, size, POSIX_MADV_DONTNEED);
      }
++
 +    static uint64_t get_entropy64() noexcept
 +    {
-+      uint64_t result;
-+      arc4random_buf(&result, sizeof(result));
-+      return result;
++      return PALPOSIX::dev_urandom();
 +    }
-+
    };
  } // namespace snmalloc
  #endif
