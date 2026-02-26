@@ -1,10 +1,8 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index cad25ef..7885a5d 100644
+index cad25ef..0ede398 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -290,13 +290,13 @@ target_include_directories(snmalloc
-   INTERFACE
-     $<INSTALL_INTERFACE:include/snmalloc>
+@@ -292,9 +292,9 @@ target_include_directories(snmalloc
      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>)
 
  if(NOT MSVC)
@@ -16,9 +14,46 @@ index cad25ef..7885a5d 100644
  endif()
 
  if (WIN32)
-   set(WIN8COMPAT FALSE CACHE BOOL "Avoid Windows 10 APIs")
-   target_compile_definitions(snmalloc INTERFACE $<$<BOOL:${WIN8COMPAT}>:WINVER=0x0603>)
-@@ -530,11 +530,11 @@ if(NOT SNMALLOC_HEADER_ONLY_LIBRARY)
+@@ -354,7 +354,13 @@ target_compile_definitions(snmalloc INTERFACE $<$<BOOL:CONST_QUALIFIED_MALLOC_US
+
+ # In debug and CI builds, link the backtrace library so that we can get stack
+ # traces on errors.
+-find_package(Backtrace)
++if (NOT CMAKE_SYSTEM_NAME STREQUAL "Haiku")
++  find_package(Backtrace)
++else()
++  # Suppress "Failed" noise on Haiku if header is missing.
++  # Recent Haiku has it in libroot, but FindBacktrace needs execinfo.h.
++  set(Backtrace_FOUND FALSE)
++endif()
+ if(${Backtrace_FOUND})
+   target_compile_definitions(snmalloc INTERFACE
+     $<${ci_or_debug}:SNMALLOC_BACKTRACE_HEADER="${Backtrace_HEADER}">)
+@@ -477,8 +483,12 @@ if(NOT SNMALLOC_HEADER_ONLY_LIBRARY)
+
+   if(NOT (DEFINED SNMALLOC_LINKER_FLAVOUR) OR ("${SNMALLOC_LINKER_FLAVOUR}" MATCHES "^$"))
+     # Linker not specified externally; probe to see if we can make lld work
+-    set(CMAKE_REQUIRED_LINK_OPTIONS -fuse-ld=lld -Wl,--icf=all)
+-    check_cxx_source_compiles("int main() { return 1; }" LLD_WORKS)
++    if (NOT CMAKE_SYSTEM_NAME STREQUAL "Haiku")
++      set(CMAKE_REQUIRED_LINK_OPTIONS -fuse-ld=lld -Wl,--icf=all)
++      check_cxx_source_compiles("int main() { return 1; }" LLD_WORKS)
++    else()
++      set(LLD_WORKS FALSE)
++    endif()
+     if (LLD_WORKS)
+       message(STATUS "Using LLD to link snmalloc shims")
+     endif()
+@@ -526,13 +536,17 @@ if(NOT SNMALLOC_HEADER_ONLY_LIBRARY)
+       set_property(TARGET ${name} PROPERTY POSITION_INDEPENDENT_CODE ON)
+
+       # Check for prefetch write support.
+-      check_cxx_compiler_flag("-Werror -Wextra -Wall -mprfchw" SUPPORT_PREFETCH_WRITE)
++      if (NOT CMAKE_SYSTEM_NAME STREQUAL "Haiku")
++        check_cxx_compiler_flag("-Werror -Wextra -Wall -mprfchw" SUPPORT_PREFETCH_WRITE)
++      else()
++        set(SUPPORT_PREFETCH_WRITE FALSE)
++      endif()
        if (SUPPORT_PREFETCH_WRITE)
          target_compile_options(${name} PRIVATE -mprfchw)
        endif()
@@ -29,40 +64,30 @@ index cad25ef..7885a5d 100644
          target_compile_options(${name} PRIVATE -ftls-model=initial-exec)
          target_compile_options(${name} PRIVATE $<$<BOOL:${SNMALLOC_CI_BUILD}>:-g>)
        endif()
-
-       if(SNMALLOC_OPTIMISE_FOR_CURRENT_MACHINE)
-@@ -550,12 +550,12 @@ if(NOT SNMALLOC_HEADER_ONLY_LIBRARY)
-       SNMALLOC_CHECK_LOADS=$<IF:$<BOOL:${SNMALLOC_CHECK_LOADS}>,true,false>)
-     target_compile_definitions(${name} PRIVATE
+@@ -552,7 +566,7 @@ if(NOT SNMALLOC_HEADER_ONLY_LIBRARY)
        SNMALLOC_PAGEID=$<IF:$<BOOL:${SNMALLOC_PAGEID}>,true,false>)
 
      if(MSVC)
 -    else()
--      # We can't do --nostdlib++ as we are using exceptions, but we
 +    elseif(NOT CMAKE_SYSTEM_NAME STREQUAL "Haiku")
-+      # We can't do --nostdlib++ as we are using exceptions, but we
+       # We can't do --nostdlib++ as we are using exceptions, but we
        # can make it a static dependency, which we aren't really using
        # as the interesting stuff for exceptions is in libgcc_s
-       target_link_options(${name} PRIVATE -static-libstdc++)
-     endif()
-
 diff --git a/src/snmalloc/pal/pal_haiku.h b/src/snmalloc/pal/pal_haiku.h
-index bbc9e07..67429df 100644
+index bbc9e07..121b0a9 100644
 --- a/src/snmalloc/pal/pal_haiku.h
 +++ b/src/snmalloc/pal/pal_haiku.h
-@@ -35,8 +35,15 @@ namespace snmalloc
-     static void notify_not_using(void* p, size_t size) noexcept
-     {
+@@ -37,6 +37,13 @@ namespace snmalloc
        SNMALLOC_ASSERT(is_aligned_block<page_size>(p, size));
        posix_madvise(p, size, POSIX_MADV_DONTNEED);
      }
-+
-+    static uint64_t get_entropy64()
++    static uint64_t get_entropy64() noexcept
 +    {
 +      uint64_t result;
 +      arc4random_buf(&result, sizeof(result));
 +      return result;
 +    }
++
    };
  } // namespace snmalloc
  #endif
