@@ -209,7 +209,7 @@ while : ; do
         setup_gd=$flag_arg;;
     hd)
         setup_hd=$flag_arg;;
-    hm)
+    hm|hml)
         setup_hm=$flag_arg;;
     iso)
         setup_iso=$flag_arg;;
@@ -227,9 +227,9 @@ while : ; do
         setup_mng=$flag_arg;;
     mesh)
         setup_mesh=$flag_arg;;
-    mi)
+    mi|mi-sec|mi-dbg)
         setup_mi=$flag_arg;;
-    mi2)
+    mi2|mi2-sec|mi2-dbg)
         setup_mi2=$flag_arg;;
     nomesh)
         setup_nomesh=$flag_arg;;
@@ -253,7 +253,7 @@ while : ; do
         setup_sg=$flag_arg;;
     sm)
         setup_sm=$flag_arg;;
-    sn)
+    sn|sn-sec|sn-dbg)
         setup_sn=$flag_arg;;
     tbb)
         setup_tbb=$flag_arg;;
@@ -281,15 +281,15 @@ while : ; do
         echo "  fg                           setup freeguard ($version_fg)"
         echo "  gd                           setup guarder ($version_gd)"
         echo "  hd                           setup hoard ($version_hd)"
-        echo "  hm                           setup hardened_malloc ($version_hm)"
+        echo "  hm, hml                      setup hardened_malloc ($version_hm)"
         echo "  iso                          setup isoalloc ($version_iso)"
         echo "  je                           setup jemalloc ($version_je)"
         echo "  lf                           setup lockfree-malloc ($version_lf)"
         echo "  lp                           setup libpas ($version_lp)"
         echo "  lt                           setup ltmalloc ($version_lt)"
         echo "  mesh                         setup mesh allocator ($version_mesh)"
-        echo "  mi                           setup mimalloc ($version_mi)"
-        echo "  mi2                          setup mimalloc ($version_mi2)"
+        echo "  mi, mi-sec, mi-dbg           setup mimalloc ($version_mi)"
+        echo "  mi2, mi2-sec, mi2-dbg        setup mimalloc ($version_mi2)"
         echo "  mng                          setup mallocng ($version_mng)"
         echo "  nomesh                       setup mesh allocator w/o meshing ($version_mesh)"
         echo "  pa                           setup PartitionAlloc ($version_pa)"
@@ -298,7 +298,7 @@ while : ; do
         echo "  scudo                        setup scudo ($version_scudo)"
         echo "  sg                           setup slimguard ($version_sg)"
         echo "  sm                           setup supermalloc ($version_sm)"
-        echo "  sn                           setup snmalloc ($version_sn)"
+        echo "  sn, sn-sec, sn-dbg           setup snmalloc ($version_sn)"
         echo "  tbb                          setup Intel TBB malloc ($version_tbb)"
         echo "  tc                           setup tcmalloc ($version_tc)"
         echo "  tcg                          setup Google's tcmalloc ($version_tcg)"

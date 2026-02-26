@@ -106,7 +106,7 @@ if ! test -f ../../build-bench-env.sh; then
   exit 1
 fi
 if ! test -d ../../extern; then
-  echo "error: you must first run `./build-build/bench.sh` (in `../..`) to install benchmarks and allocators."
+  echo "error: you must first run `./build-bench-env.sh` (in `../..`) to install benchmarks and allocators."
   exit 1
 fi
 
