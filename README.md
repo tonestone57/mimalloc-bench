@@ -101,6 +101,7 @@ for the versions:
 - **mi**: The [_mimalloc_](https://github.com/microsoft/mimalloc) allocator.
   We can also test the debug version as **dmi** (this can be used to check for
   any bugs in the benchmarks), and the secure version as **smi**.
+  We support versions **mi** (v1.x), **mi2** (v2.x), and **mi3** (v3.x).
 - **mng**: [musl](https://musl.libc.org)'s memory allocator.
 - **pa**: The [_PartitionAlloc_](https://chromium.googlesource.com/chromium/src/base/allocator/partition_allocator.git/+/refs/heads/main/PartitionAlloc.md) allocator used in Chromium.
 - **rp**: The [_rpmalloc_](https://github.com/mjansson/rpmalloc) allocator uses

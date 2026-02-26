@@ -74,6 +74,7 @@ readonly version_lt=master   # ~unmaintained since 2019
 readonly version_mesh=master # ~unmaintained since 2021
 readonly version_mi=v1.8.2
 readonly version_mi2=v2.1.2
+readonly version_mi3=v3.2.8
 readonly version_mng=master  # ~unmaintained
 readonly version_nomesh=$version_mesh
 readonly version_pa=main
@@ -114,6 +115,7 @@ setup_lt=0
 setup_mesh=0
 setup_mi=0
 setup_mi2=0
+setup_mi3=0
 setup_mng=0
 setup_nomesh=0
 setup_pa=0
@@ -164,6 +166,7 @@ while : ; do
         setup_lp=$flag_arg
         setup_mi=$flag_arg
         setup_mi2=$flag_arg
+        setup_mi3=$flag_arg
         setup_pa=0  # Currently broken upstream due to missing third_party dependencies
         setup_sn=$flag_arg
         setup_sg=$flag_arg
@@ -209,7 +212,7 @@ while : ; do
         setup_gd=$flag_arg;;
     hd)
         setup_hd=$flag_arg;;
-    hm)
+    hm|hml)
         setup_hm=$flag_arg;;
     iso)
         setup_iso=$flag_arg;;
@@ -227,10 +230,12 @@ while : ; do
         setup_mng=$flag_arg;;
     mesh)
         setup_mesh=$flag_arg;;
-    mi)
+    mi|mi-sec|mi-dbg)
         setup_mi=$flag_arg;;
-    mi2)
+    mi2|mi2-sec|mi2-dbg)
         setup_mi2=$flag_arg;;
+    mi3|mi3-sec|mi3-dbg)
+        setup_mi3=$flag_arg;;
     nomesh)
         setup_nomesh=$flag_arg;;
     pa)
@@ -253,7 +258,7 @@ while : ; do
         setup_sg=$flag_arg;;
     sm)
         setup_sm=$flag_arg;;
-    sn)
+    sn|sn-sec|sn-dbg)
         setup_sn=$flag_arg;;
     tbb)
         setup_tbb=$flag_arg;;
@@ -281,15 +286,16 @@ while : ; do
         echo "  fg                           setup freeguard ($version_fg)"
         echo "  gd                           setup guarder ($version_gd)"
         echo "  hd                           setup hoard ($version_hd)"
-        echo "  hm                           setup hardened_malloc ($version_hm)"
+        echo "  hm, hml                      setup hardened_malloc ($version_hm)"
         echo "  iso                          setup isoalloc ($version_iso)"
         echo "  je                           setup jemalloc ($version_je)"
         echo "  lf                           setup lockfree-malloc ($version_lf)"
         echo "  lp                           setup libpas ($version_lp)"
         echo "  lt                           setup ltmalloc ($version_lt)"
         echo "  mesh                         setup mesh allocator ($version_mesh)"
-        echo "  mi                           setup mimalloc ($version_mi)"
-        echo "  mi2                          setup mimalloc ($version_mi2)"
+        echo "  mi, mi-sec, mi-dbg           setup mimalloc ($version_mi)"
+        echo "  mi2, mi2-sec, mi2-dbg        setup mimalloc ($version_mi2)"
+        echo "  mi3, mi3-sec, mi3-dbg        setup mimalloc ($version_mi3)"
         echo "  mng                          setup mallocng ($version_mng)"
         echo "  nomesh                       setup mesh allocator w/o meshing ($version_mesh)"
         echo "  pa                           setup PartitionAlloc ($version_pa)"
@@ -298,7 +304,7 @@ while : ; do
         echo "  scudo                        setup scudo ($version_scudo)"
         echo "  sg                           setup slimguard ($version_sg)"
         echo "  sm                           setup supermalloc ($version_sm)"
-        echo "  sn                           setup snmalloc ($version_sn)"
+        echo "  sn, sn-sec, sn-dbg           setup snmalloc ($version_sn)"
         echo "  tbb                          setup Intel TBB malloc ($version_tbb)"
         echo "  tc                           setup tcmalloc ($version_tc)"
         echo "  tcg                          setup Google's tcmalloc ($version_tcg)"
@@ -903,6 +909,33 @@ if test "$setup_mi" = "1"; then
 
   echo ""
   echo "- build mimalloc secure"
+
+  cmake -B out/secure -DMI_SECURE=ON
+  cmake --build out/secure --parallel $procs
+  popd
+fi
+
+if test "$setup_mi3" = "1"; then
+  checkout mi3 $version_mi3 https://github.com/microsoft/mimalloc
+  if test "$haiku" = "1"; then
+    patch -p1 -l -N < "$curdir/patches/mimalloc_haiku.patch" || true
+    ensure_haiku_tool cmake cmake
+  fi
+
+  echo ""
+  echo "- build mimalloc3 release"
+
+  cmake -B out/release
+  cmake --build out/release --parallel $procs
+
+  echo ""
+  echo "- build mimalloc3 debug with full checking"
+
+  cmake -B out/debug -DMI_CHECK_FULL=ON
+  cmake --build out/debug --parallel $procs
+
+  echo ""
+  echo "- build mimalloc3 secure"
 
   cmake -B out/secure -DMI_SECURE=ON
   cmake --build out/secure --parallel $procs
