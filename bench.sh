@@ -6,7 +6,7 @@
 # Allocators and tests
 # --------------------------------------------------------------------
 
-readonly alloc_all="sys dh ff fg gd hd hm hml iso je lf lp lt mi mi-sec mi2 mi2-sec mng mesh nomesh pa rp sc scudo sg sm sn sn-sec tbb tc tcg mi-dbg mi2-dbg xmi xsmi xmi-dbg yal"
+readonly alloc_all="sys dh ff fg gd hd hm hml iso je lf lp lt mi mi-sec mi2 mi2-sec mng mesh nomesh pa rp sc scudo sg sm sn sn-sec sn-dbg tbb tc tcg mi-dbg mi2-dbg xmi xsmi xmi-dbg yal"
 readonly alloc_secure="dh ff gd hm hml iso mi-sec mi2-sec mng pa scudo sg sn-sec sg"
 alloc_run=""           # allocators to run (expanded by command line options)
 alloc_installed="sys"  # later expanded to include all installed allocators
@@ -153,6 +153,7 @@ alloc_lib_add "sg"     "$localdevdir/sg/libSlimGuard.so"
 alloc_lib_add "sm"     "$localdevdir/sm/release/lib/libsupermalloc$extso"
 alloc_lib_add "sn"     "$localdevdir/sn/release/libsnmallocshim$extso"
 alloc_lib_add "sn-sec" "$localdevdir/sn/release/libsnmallocshim-checks$extso"
+alloc_lib_add "sn-dbg" "$localdevdir/sn/debug/libsnmallocshim$extso"
 alloc_lib_add "tbb"    "$lib_tbb"
 alloc_lib_add "tc"     "$localdevdir/tc/.libs/libtcmalloc_minimal$extso"
 alloc_lib_add "tcg"    "$localdevdir/tcg/bazel-bin/tcmalloc/libtcmalloc$extso"
@@ -265,7 +266,7 @@ if is_installed "hm"; then
   alloc_installed="$alloc_installed hml"   # hardened_malloc light
 fi
 if is_installed "sn"; then
-  alloc_installed="$alloc_installed sn-sec"   # secure snmalloc
+  alloc_installed="$alloc_installed sn-sec sn-dbg"   # secure snmalloc
 fi
 
 
@@ -454,6 +455,7 @@ while : ; do
             echo "  sm                           use supermalloc"
             echo "  sn                           use snmalloc"
             echo "  sn-sec                       use secure version of snmalloc"
+            echo "  sn-dbg                       use debug version of snmalloc"
             echo "  sys                          use system malloc ($libc)"
             echo "  tbb                          use Intel TBB malloc"
             echo "  tc                           use tcmalloc (from gperftools)"
@@ -695,6 +697,7 @@ function run_test_cmd {  # <test name> <command>
       for ((i=$test_repeats; i>0; i--)); do
         case "$alloc" in
           sys) run_test_env_cmd $1 "sys" "SYSMALLOC=1" "$2" $i;;
+          sn-dbg) run_test_env_cmd $1 "sn-dbg" "SNMALLOC_TRACING=ON ${ldpreload}=$alloc_lib" "$2" $i;;
           mi-dbg) run_test_env_cmd $1 "mi-dbg" "MIMALLOC_VERBOSE=1 MIMALLOC_STATS=1 ${ldpreload}=$alloc_lib" "$2" $i;;
           mi2-dbg) run_test_env_cmd $1 "mi2-dbg" "MIMALLOC_VERBOSE=1 MIMALLOC_STATS=1 ${ldpreload}=$alloc_lib" "$2" $i;;
           tbb) run_test_env_cmd $1 "tbb" "LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$lib_tbb_dir ${ldpreload}=$alloc_lib" "$2" $i;;

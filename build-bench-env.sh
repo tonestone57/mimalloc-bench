@@ -813,7 +813,7 @@ if test "$setup_sn" = "1"; then
     ensure_haiku_tool ninja ninja
   fi
   if test -f release/build.ninja; then
-    echo "$devdir/sn is already configured; no need to reconfigure"
+    echo "$devdir/sn release is already configured; no need to reconfigure"
   else
     mkdir -p release
     cd release
@@ -822,6 +822,18 @@ if test "$setup_sn" = "1"; then
     cd ..
   fi
   cd release
+  ninja libsnmallocshim$extso libsnmallocshim-checks$extso
+  cd ..
+
+  if test -f debug/build.ninja; then
+    echo "$devdir/sn debug is already configured; no need to reconfigure"
+  else
+    mkdir -p debug
+    cd debug
+    cmake -G Ninja .. -DCMAKE_BUILD_TYPE=Debug -DSNMALLOC_TRACING=ON -DSNMALLOC_CLEANUP=CXX11_DESTRUCTORS
+    cd ..
+  fi
+  cd debug
   ninja libsnmallocshim$extso libsnmallocshim-checks$extso
   popd
 fi
