@@ -6,8 +6,8 @@
 # Allocators and tests
 # --------------------------------------------------------------------
 
-readonly alloc_all="sys dh ff fg gd hd hm hml iso je lf lp lt mi mi-sec mi2 mi2-sec mng mesh nomesh pa rp sc scudo sg sm sn sn-sec sn-dbg tbb tc tcg mi-dbg mi2-dbg xmi xsmi xmi-dbg yal"
-readonly alloc_secure="dh ff gd hm hml iso mi-sec mi2-sec mng pa scudo sg sn-sec sg"
+readonly alloc_all="sys dh ff fg gd hd hm hml iso je lf lp lt mi mi-sec mi2 mi2-sec mi3 mi3-sec mng mesh nomesh pa rp sc scudo sg sm sn sn-sec sn-dbg tbb tc tcg mi-dbg mi2-dbg mi3-dbg xmi xsmi xmi-dbg yal"
+readonly alloc_secure="dh ff gd hm hml iso mi-sec mi2-sec mi3-sec mng pa scudo sg sn-sec sg"
 alloc_run=""           # allocators to run (expanded by command line options)
 alloc_installed="sys"  # later expanded to include all installed allocators
 alloc_libs="sys="      # mapping from allocator to its .so as "<allocator>=<sofile> ..."
@@ -166,6 +166,10 @@ alloc_lib_add "mi2"     "$localdevdir/mi2/out/release/libmimalloc$extso"
 alloc_lib_add "mi2-sec" "$localdevdir/mi2/out/secure/libmimalloc-secure$extso"
 alloc_lib_add "mi2-dbg" "$localdevdir/mi2/out/debug/libmimalloc-debug$extso"
 
+alloc_lib_add "mi3"     "$localdevdir/mi3/out/release/libmimalloc$extso"
+alloc_lib_add "mi3-sec" "$localdevdir/mi3/out/secure/libmimalloc-secure$extso"
+alloc_lib_add "mi3-dbg" "$localdevdir/mi3/out/debug/libmimalloc-debug$extso"
+
 xmidir="$localdevdir/../../mi"
 if ! [ -d "$xmidir" ]; then
   xmidir_ext="${xmidir}malloc"
@@ -261,6 +265,9 @@ if is_installed "mi"; then
 fi
 if is_installed "mi2"; then
   alloc_installed="$alloc_installed mi2-sec mi2-dbg"   # secure mimalloc
+fi
+if is_installed "mi3"; then
+  alloc_installed="$alloc_installed mi3-sec mi3-dbg"   # secure mimalloc
 fi
 if is_installed "hm"; then
   alloc_installed="$alloc_installed hml"   # hardened_malloc light
@@ -430,6 +437,7 @@ while : ; do
             echo "  dh                           use dieharder"
             echo "  mi-dbg                          use debug version of mimalloc"
             echo "  mi2-dbg                         use debug version of mimalloc2"
+            echo "  mi3-dbg                         use debug version of mimalloc3"
             echo "  ff                           use ffmalloc"
             echo "  fg                           use freeguard"
             echo "  gd                           use guarder"
@@ -445,6 +453,8 @@ while : ; do
             echo "  mi-sec                       use secure version of mimalloc"
             echo "  mi2                          use mimalloc2"
             echo "  mi2-sec                      use secure version of mimalloc2"
+            echo "  mi3                          use mimalloc3"
+            echo "  mi3-sec                      use secure version of mimalloc3"
             echo "  mng                          use mallocng"
             echo "  nomesh                       use mesh with meshing disabled"
             echo "  pa                           use PartitionAlloc"
@@ -700,6 +710,7 @@ function run_test_cmd {  # <test name> <command>
           sn-dbg) run_test_env_cmd $1 "sn-dbg" "SNMALLOC_TRACING=ON ${ldpreload}=$alloc_lib" "$2" $i;;
           mi-dbg) run_test_env_cmd $1 "mi-dbg" "MIMALLOC_VERBOSE=1 MIMALLOC_STATS=1 ${ldpreload}=$alloc_lib" "$2" $i;;
           mi2-dbg) run_test_env_cmd $1 "mi2-dbg" "MIMALLOC_VERBOSE=1 MIMALLOC_STATS=1 ${ldpreload}=$alloc_lib" "$2" $i;;
+          mi3-dbg) run_test_env_cmd $1 "mi3-dbg" "MIMALLOC_VERBOSE=1 MIMALLOC_STATS=1 ${ldpreload}=$alloc_lib" "$2" $i;;
           tbb) run_test_env_cmd $1 "tbb" "LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$lib_tbb_dir ${ldpreload}=$alloc_lib" "$2" $i;;
           *)   run_test_env_cmd $1 "$alloc" "${ldpreload}=$alloc_lib" "$2" $i;;
         esac
