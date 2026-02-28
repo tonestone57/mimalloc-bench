@@ -34,4 +34,4 @@ This document lists the memory allocators supported by the `mimalloc-bench` suit
 | **yal** | yalloc | `main` | [github.com/jorisgeer/yalloc](https://github.com/jorisgeer/yalloc) |
 | **sys** | System Allocator | `system` | N/A (Part of the OS) |
 
-*Note: For some allocators (like `hd`, `tcg`), the specific commit hash used in the build script is provided to ensure reproducibility.*
+*Note: For some allocators (like `tcg`), the specific commit hash used in the build script is provided to ensure reproducibility.*
