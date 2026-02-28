@@ -64,16 +64,16 @@ readonly version_dh=master
 readonly version_ff=master   # ~unmaintained since 2021
 readonly version_fg=master   # ~unmaintained since 2018
 readonly version_gd=master   # ~unmaintained since 2021
-readonly version_hd=6577c22b # HEAD as of 2025-07-18, no release since 2019
-readonly version_hm=11
+readonly version_hd=3.2
+readonly version_hm=14
 readonly version_iso=1.2.5
 readonly version_je=5.3.0
 readonly version_lf=master   # ~unmaintained since 2018
 readonly version_lp=main
 readonly version_lt=master   # ~unmaintained since 2019
 readonly version_mesh=master # ~unmaintained since 2021
-readonly version_mi=v1.8.2
-readonly version_mi2=v2.1.2
+readonly version_mi=v1.9.7
+readonly version_mi2=v2.2.7
 readonly version_mi3=v3.2.8
 readonly version_mng=master  # ~unmaintained
 readonly version_nomesh=$version_mesh
@@ -84,7 +84,7 @@ readonly version_scudo=main
 readonly version_sg=master   # ~unmaintained since 2021
 readonly version_sm=master   # ~unmaintained since 2017
 readonly version_sn=0.7.3
-readonly version_tbb=v2021.9.0
+readonly version_tbb=v2022.3.0
 readonly version_tc=gperftools-2.18
 readonly version_tcg=98fd24303c7b5ef5e30da625f11fb623a5e038b6 # 2025-07-18
 readonly version_yal=main
@@ -507,7 +507,7 @@ function checkout {  # name, git-tag, git repo, options
   if test -d "$1"; then
     echo "$devdir/$1 already exists; no need to git clone"
   else
-    git clone $4 $3 $1
+    git clone --recursive $4 $3 $1
   fi
   cd "$1"
   git reset --hard HEAD
@@ -723,7 +723,7 @@ if test "$setup_dh" = "1"; then
 fi
 
 if test "$setup_tbb" = "1"; then
-  checkout tbb $version_tbb https://github.com/oneapi-src/oneTBB
+  checkout tbb $version_tbb https://github.com/uxlfoundation/oneTBB
   if test "$haiku" = "1"; then
     patch -p1 -l -N < "$curdir/patches/tbb_haiku.patch" || true
     ensure_haiku_tool cmake cmake
@@ -763,7 +763,7 @@ if test "$setup_tcg" = "1"; then
 fi
 
 if test "$setup_hd" = "1"; then
-  checkout hd $version_hd https://github.com/emeryberger/Hoard
+  checkout hd $version_hd https://github.com/emeryberger/Hoard.git
   cd src
   if [ "`uname -m -s`" = "Darwin x86_64" ] ; then
     sed -i_orig 's/-arch arm64/ /g' GNUmakefile   # fix the makefile    

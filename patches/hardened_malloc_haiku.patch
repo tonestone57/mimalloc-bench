@@ -1,8 +1,8 @@
 diff --git a/h_malloc.c b/h_malloc.c
-index 91159b0..8b2e115 100644
+index a8e2f8d..8b2e115 100644
 --- a/h_malloc.c
 +++ b/h_malloc.c
-@@ -61,7 +61,11 @@ static_assert(N_ARENA <= 256, "maximum number of arenas is currently 256");
+@@ -61,7 +61,11 @@ static const size_t canary_size = SLAB_CANARY ? sizeof(u64) : 0;
  #define CACHELINE_SIZE 64
 
  #if N_ARENA > 1
@@ -11,24 +11,24 @@ index 91159b0..8b2e115 100644
 +#else
  __attribute__((tls_model("initial-exec")))
 +#endif
- static thread_local unsigned thread_arena = N_ARENA;
+ static _Thread_local unsigned thread_arena = N_ARENA;
  static atomic_uint thread_arena_counter = 0;
  #else
 diff --git a/memory.c b/memory.c
-index 2d995ef..42dff4e 100644
+index 42dff4e..2d995ef 100644
 --- a/memory.c
 +++ b/memory.c
-@@ -1,7 +1,9 @@
- #include <errno.h>
-
+@@ -3,7 +3,9 @@
  #include <sys/mman.h>
+
+ #ifdef LABEL_MEMORY
 +#ifndef __HAIKU__
  #include <sys/prctl.h>
 +#endif
+ #endif
 
  #ifndef PR_SET_VMA
- #define PR_SET_VMA 0x53564d41
-@@ -95,7 +97,7 @@ bool memory_purge(void *ptr, size_t size) {
+@@ -121,7 +123,7 @@ bool memory_purge(void *ptr, size_t size) {
  }
 
  bool memory_set_name(UNUSED void *ptr, UNUSED size_t size, UNUSED const char *name) {
@@ -38,7 +38,7 @@ index 2d995ef..42dff4e 100644
  #else
      return false;
 diff --git a/random.c b/random.c
-index 8883531..753278f 100644
+index 753278f..8883531 100644
 --- a/random.c
 +++ b/random.c
 @@ -1,13 +1,22 @@

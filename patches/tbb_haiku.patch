@@ -1,19 +1,18 @@
 diff --git a/include/oneapi/tbb/detail/_export.h b/include/oneapi/tbb/detail/_export.h
-index 4c015223..8094254b 100644
+index 4016629..05d4b5b 100644
 --- a/include/oneapi/tbb/detail/_export.h
 +++ b/include/oneapi/tbb/detail/_export.h
-@@ -19,7 +19,8 @@
-
- #if defined(__MINGW32__)
-     #define _EXPORT __declspec(dllexport)
--#elif defined(_WIN32) || defined(__unix__) || defined(__APPLE__) // Use .def files for these
-+#elif defined(_WIN32) || defined(__unix__) || defined(__APPLE__) || defined(__HAIKU__) // Use .def files for these
-+    #undef _EXPORT
-     #define _EXPORT
+@@ -23,7 +23,7 @@
+     #define __TBB_EXPORT __declspec(dllexport)
+ #elif defined(_WIN32) // Use .def files for these
+     #define __TBB_EXPORT
+-#elif defined(__unix__) || defined(__APPLE__) // Use .def files for these
++#elif defined(__unix__) || defined(__APPLE__) || defined(__HAIKU__) // Use .def files for these
+     #define __TBB_EXPORT __attribute__ ((visibility ("default")))
  #else
      #error "Unknown platform/compiler"
 diff --git a/src/tbbmalloc/frontend.cpp b/src/tbbmalloc/frontend.cpp
-index e32c240c..352f785c 100644
+index d295116..9137021 100644
 --- a/src/tbbmalloc/frontend.cpp
 +++ b/src/tbbmalloc/frontend.cpp
 @@ -772,7 +772,7 @@ static inline unsigned int highestBitPos(unsigned int n)
@@ -26,26 +25,32 @@ index e32c240c..352f785c 100644
  # elif (_WIN32 && (!_WIN64 || __INTEL_COMPILER))
      __asm
 diff --git a/src/tbbmalloc/tbbmalloc.cpp b/src/tbbmalloc/tbbmalloc.cpp
-index 7311107c..44d4719c 100644
+index d815779..f6323bc 100644
 --- a/src/tbbmalloc/tbbmalloc.cpp
 +++ b/src/tbbmalloc/tbbmalloc.cpp
-@@ -43,6 +43,6 @@
+@@ -43,7 +43,7 @@
+ #define MALLOCLIB_NAME "tbbmalloc" DEBUG_SUFFIX ".dll"
  #elif __APPLE__
- #define MALLOCLIB_NAME "libtbbmalloc" DEBUG_SUFFIX ".dylib"
+ #define MALLOCLIB_NAME "libtbbmalloc" DEBUG_SUFFIX ".2.dylib"
 -#elif __FreeBSD__ || __NetBSD__ || __OpenBSD__ || __sun || _AIX || __ANDROID__
 +#elif __FreeBSD__ || __NetBSD__ || __OpenBSD__ || __sun || _AIX || __ANDROID__ || defined(__HAIKU__)
  #define MALLOCLIB_NAME "libtbbmalloc" DEBUG_SUFFIX ".so"
  #elif __unix__
  #define MALLOCLIB_NAME "libtbbmalloc" DEBUG_SUFFIX  __TBB_STRING(.so.2)
 diff --git a/cmake/compilers/GNU.cmake b/cmake/compilers/GNU.cmake
-index 7253406f..d5770330 100644
+index bd322a3..9431e6c 100644
 --- a/cmake/compilers/GNU.cmake
 +++ b/cmake/compilers/GNU.cmake
-@@ -40,6 +40,6 @@ if (CMAKE_SYSTEM_PROCESSOR MATCHES "(AMD64|amd64|i.86|x86)")
+@@ -93,7 +93,11 @@ if (CMAKE_SYSTEM_PROCESSOR MATCHES "(AMD64|amd64|i.86|x86)" AND NOT EMSCRIPTEN)
      set(TBB_COMMON_COMPILE_FLAGS ${TBB_COMMON_COMPILE_FLAGS} -mrtm $<$<AND:$<NOT:$<CXX_COMPILER_ID:Intel>>,$<NOT:$<VERSION_LESS:${CMAKE_CXX_COMPILER_VERSION},11.0>>>:-mwaitpkg>)
  endif()
 
--if (NOT MINGW)
-+if (NOT MINGW AND NOT "${CMAKE_SYSTEM_NAME}" STREQUAL "Haiku")
-     set(TBB_COMMON_LINK_LIBS dl)
- endif()
+-set(TBB_COMMON_LINK_LIBS ${CMAKE_DL_LIBS})
++if (HAIKU OR CMAKE_SYSTEM_NAME STREQUAL "Haiku")
++    set(TBB_COMMON_LINK_LIBS "")
++else()
++    set(TBB_COMMON_LINK_LIBS ${CMAKE_DL_LIBS})
++endif()
+
+ # Ignore -Werror set through add_compile_options() or added to CMAKE_CXX_FLAGS if TBB_STRICT is disabled.
+ if (NOT TBB_STRICT AND COMMAND tbb_remove_compile_flag)
