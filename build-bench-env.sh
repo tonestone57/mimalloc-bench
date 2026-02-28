@@ -507,7 +507,7 @@ function checkout {  # name, git-tag, git repo, options
   if test -d "$1"; then
     echo "$devdir/$1 already exists; no need to git clone"
   else
-    git clone $4 $3 $1
+    git clone --recursive $4 $3 $1
   fi
   cd "$1"
   git reset --hard HEAD
@@ -763,7 +763,7 @@ if test "$setup_tcg" = "1"; then
 fi
 
 if test "$setup_hd" = "1"; then
-  checkout hd $version_hd https://github.com/emeryberger/Hoard
+  checkout hd $version_hd https://github.com/emeryberger/Hoard.git
   cd src
   if [ "`uname -m -s`" = "Darwin x86_64" ] ; then
     sed -i_orig 's/-arch arm64/ /g' GNUmakefile   # fix the makefile    
