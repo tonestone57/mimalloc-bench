@@ -16,8 +16,8 @@ This document lists the memory allocators supported by the `mimalloc-bench` suit
 | **lp** | libpas | `main` | [github.com/WebKit/WebKit](https://github.com/WebKit/WebKit) |
 | **lt** | ltalloc | `master` | [github.com/r-lyeh-archived/ltalloc](https://github.com/r-lyeh-archived/ltalloc) |
 | **mesh** | Mesh | `master` | [github.com/plasma-umass/mesh](https://github.com/plasma-umass/mesh) |
-| **mi** | mimalloc (v1.x) | `v1.8.2` | [github.com/microsoft/mimalloc](https://github.com/microsoft/mimalloc) |
-| **mi2** | mimalloc (v2.x) | `v2.1.2` | [github.com/microsoft/mimalloc](https://github.com/microsoft/mimalloc) |
+| **mi** | mimalloc (v1.x) | `v1.9.7` | [github.com/microsoft/mimalloc](https://github.com/microsoft/mimalloc) |
+| **mi2** | mimalloc (v2.x) | `v2.2.7` | [github.com/microsoft/mimalloc](https://github.com/microsoft/mimalloc) |
 | **mi3** | mimalloc (v3.x) | `v3.2.8` | [github.com/microsoft/mimalloc](https://github.com/microsoft/mimalloc) |
 | **mng** | mallocng | `master` | [github.com/richfelker/mallocng-draft](https://github.com/richfelker/mallocng-draft) |
 | **nomesh** | Mesh (no meshing) | `master` | [github.com/plasma-umass/mesh](https://github.com/plasma-umass/mesh) |
