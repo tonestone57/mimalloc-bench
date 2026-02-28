@@ -8,7 +8,7 @@ index 82843a3..a32849b 100644
 
 +ifeq ($(UNAME), Haiku)
 +STRIP = strip -s $(BUILD_DIR)/$(LIBNAME)
-+OS_FLAGS = -lbsd
++OS_FLAGS = -lbsd -Wl,-z,noexecstack
 +endif
 +
  ifeq ($(UNAME), SunOS)
