@@ -9,7 +9,7 @@ This document lists the memory allocators supported by the `mimalloc-bench` suit
 | **fg** | FreeGuard | `master` | [github.com/UTSASRG/FreeGuard](https://github.com/UTSASRG/FreeGuard) |
 | **gd** | Guarder | `master` | [github.com/UTSASRG/Guarder](https://github.com/UTSASRG/Guarder) |
 | **hd** | Hoard | `3.2` | [github.com/emeryberger/Hoard](https://github.com/emeryberger/Hoard) |
-| **hm** | Hardened Malloc | `3bee8d3e` | [github.com/GrapheneOS/hardened_malloc](https://github.com/GrapheneOS/hardened_malloc) |
+| **hm** | Hardened Malloc | `14` | [github.com/GrapheneOS/hardened_malloc](https://github.com/GrapheneOS/hardened_malloc) |
 | **iso** | isoalloc | `1.2.5` | [github.com/struct/isoalloc](https://github.com/struct/isoalloc) |
 | **je** | jemalloc | `5.3.0` | [github.com/jemalloc/jemalloc](https://github.com/jemalloc/jemalloc) |
 | **lf** | lockfree-malloc | `master` | [github.com/Begun/lockfree-malloc](https://github.com/Begun/lockfree-malloc) |
