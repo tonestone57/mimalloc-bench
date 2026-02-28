@@ -38,6 +38,10 @@ index 5e1f8fa..c291d02 100644
  #if USE_SPINLOCK
  atomic_flag root_busy_flag;
  #else
+@@ -13,7 +17,7 @@
+ #if USE_SPINLOCK
+ atomic_flag root_busy_flag;
+ #else
 -pthread_mutex_t root_busy_mutex;
 +pthread_mutex_t root_busy_mutex = PTHREAD_MUTEX_INITIALIZER;
  #endif
