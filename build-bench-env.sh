@@ -64,7 +64,7 @@ readonly version_dh=master
 readonly version_ff=master   # ~unmaintained since 2021
 readonly version_fg=master   # ~unmaintained since 2018
 readonly version_gd=master   # ~unmaintained since 2021
-readonly version_hd=3.2
+readonly version_hd=3.13
 readonly version_hm=14
 readonly version_iso=1.2.5
 readonly version_je=5.3.0
@@ -1009,7 +1009,11 @@ if test "$setup_lean" = "1"; then
   fi
   mkdir -p out/release
   cd out/release
-  env CC=gcc CXX="g++" cmake -DCMAKE_POLICY_VERSION_MINIMUM=3.5 ../../src -DCUSTOM_ALLOCATORS=OFF -DLEAN_EXTRA_CXX_FLAGS="-w"
+  lean_linker_flags=""
+  if test "$haiku" = "1"; then
+    lean_linker_flags="-lnetwork"
+  fi
+  env CC=gcc CXX="g++" cmake -DCMAKE_POLICY_VERSION_MINIMUM=3.5 ../../src -DCUSTOM_ALLOCATORS=OFF -DLEAN_EXTRA_CXX_FLAGS="-w" -DLEAN_EXTRA_LINKER_FLAGS="$lean_linker_flags"
   echo "make -j$procs"
   make -j $procs
   rm -rf ./tests/  # we don't need tests

@@ -8,7 +8,7 @@ This document lists the memory allocators supported by the `mimalloc-bench` suit
 | **ff** | ffmalloc | `master` | [github.com/bwickman97/ffmalloc](https://github.com/bwickman97/ffmalloc) |
 | **fg** | FreeGuard | `master` | [github.com/UTSASRG/FreeGuard](https://github.com/UTSASRG/FreeGuard) |
 | **gd** | Guarder | `master` | [github.com/UTSASRG/Guarder](https://github.com/UTSASRG/Guarder) |
-| **hd** | Hoard | `3.2` | [github.com/emeryberger/Hoard](https://github.com/emeryberger/Hoard) |
+| **hd** | Hoard | `3.13` | [github.com/emeryberger/Hoard](https://github.com/emeryberger/Hoard) |
 | **hm** | Hardened Malloc | `14` | [github.com/GrapheneOS/hardened_malloc](https://github.com/GrapheneOS/hardened_malloc) |
 | **iso** | isoalloc | `1.2.5` | [github.com/struct/isoalloc](https://github.com/struct/isoalloc) |
 | **je** | jemalloc | `5.3.0` | [github.com/jemalloc/jemalloc](https://github.com/jemalloc/jemalloc) |

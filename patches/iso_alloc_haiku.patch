@@ -27,7 +27,7 @@ diff --git a/src/iso_alloc.c b/src/iso_alloc.c
 index 5e1f8fa..c291d02 100644
 --- a/src/iso_alloc.c
 +++ b/src/iso_alloc.c
-@@ -10,6 +10,10 @@
+@@ -10,10 +10,14 @@
  #include "iso_alloc_internal.h"
  #include "iso_alloc_util.h"
 
@@ -35,10 +35,6 @@ index 5e1f8fa..c291d02 100644
 +__asm__(".section .note.GNU-stack,\"\",@progbits");
 +#endif
 +
- #if USE_SPINLOCK
- atomic_flag root_busy_flag;
- #else
-@@ -13,7 +17,7 @@
  #if USE_SPINLOCK
  atomic_flag root_busy_flag;
  #else
