@@ -84,7 +84,7 @@ readonly version_scudo=main
 readonly version_sg=master   # ~unmaintained since 2021
 readonly version_sm=master   # ~unmaintained since 2017
 readonly version_sn=0.7.3
-readonly version_tbb=v2021.9.0
+readonly version_tbb=v2022.3.0
 readonly version_tc=gperftools-2.18
 readonly version_tcg=98fd24303c7b5ef5e30da625f11fb623a5e038b6 # 2025-07-18
 readonly version_yal=main
@@ -723,7 +723,7 @@ if test "$setup_dh" = "1"; then
 fi
 
 if test "$setup_tbb" = "1"; then
-  checkout tbb $version_tbb https://github.com/oneapi-src/oneTBB
+  checkout tbb $version_tbb https://github.com/uxlfoundation/oneTBB
   if test "$haiku" = "1"; then
     patch -p1 -l -N < "$curdir/patches/tbb_haiku.patch" || true
     ensure_haiku_tool cmake cmake

@@ -28,7 +28,7 @@ This document lists the memory allocators supported by the `mimalloc-bench` suit
 | **sg** | SlimGuard | `master` | [github.com/ssrg-vt/SlimGuard](https://github.com/ssrg-vt/SlimGuard) |
 | **sm** | Supermalloc | `master` | [github.com/kuszmaul/SuperMalloc](https://github.com/kuszmaul/SuperMalloc) |
 | **sn** | snmalloc | `0.7.3` | [github.com/Microsoft/snmalloc](https://github.com/Microsoft/snmalloc) |
-| **tbb** | Intel TBB | `v2021.9.0` | [github.com/oneapi-src/oneTBB](https://github.com/oneapi-src/oneTBB) |
+| **tbb** | Intel TBB | `v2022.3.0` | [github.com/uxlfoundation/oneTBB](https://github.com/uxlfoundation/oneTBB) |
 | **tc** | tcmalloc (gperftools) | `gperftools-2.18` | [github.com/gperftools/gperftools](https://github.com/gperftools/gperftools) |
 | **tcg** | tcmalloc (Google) | `98fd2430` | [github.com/google/tcmalloc](https://github.com/google/tcmalloc) |
 | **yal** | yalloc | `main` | [github.com/jorisgeer/yalloc](https://github.com/jorisgeer/yalloc) |
