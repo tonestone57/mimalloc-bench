@@ -1,5 +1,20 @@
---- src/tests/proc_maps_iterator_test.cc
-+++ src/tests/proc_maps_iterator_test.cc
+--- a/src/base/basictypes.h
++++ b/src/base/basictypes.h
+@@ -85,7 +85,11 @@
+ #endif
+
+ #if defined(HAVE___ATTRIBUTE__)
+-#define ATTR_INITIAL_EXEC __attribute__ ((tls_model ("initial-exec")))
++# if defined(__HAIKU__)
++#  define ATTR_INITIAL_EXEC __attribute__ ((tls_model ("global-dynamic")))
++# else
++#  define ATTR_INITIAL_EXEC __attribute__ ((tls_model ("initial-exec")))
++# endif
+ #else
+ #define ATTR_INITIAL_EXEC
+ #endif
+--- a/src/tests/proc_maps_iterator_test.cc
++++ b/src/tests/proc_maps_iterator_test.cc
 @@ -39,7 +39,7 @@
  #include "base/generic_writer.h"
  #include "gtest/gtest.h"
@@ -9,7 +24,7 @@
  #include <link.h>
  #define PRINT_DL_PHDRS
  #endif
-@@ -68,6 +68,16 @@ TEST(ProcMapsIteratorTest, ForEachMapping) {
+@@ -68,6 +68,16 @@
 
  #ifdef PRINT_DL_PHDRS
 
