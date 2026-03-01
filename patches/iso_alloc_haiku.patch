@@ -1,9 +1,7 @@
-diff --git a/Makefile b/Makefile
-index 82843a3..a32849b 100644
---- a/Makefile
-+++ b/Makefile
-@@ -235,6 +235,11 @@ STRIP = strip -s $(BUILD_DIR)/$(LIBNAME)
- HUGE_PAGES =
+--- Makefile	2026-03-01 12:16:11.237844810 +0000
++++ Makefile	2026-03-01 12:16:11.341844809 +0000
+@@ -230,6 +230,11 @@
+ OS_FLAGS = -I/usr/local/cxx_atomics
  endif
 
 +ifeq ($(UNAME), Haiku)
@@ -11,10 +9,10 @@ index 82843a3..a32849b 100644
 +OS_FLAGS = -L/boot/system/develop/lib -lbsd
 +endif
 +
- ifeq ($(UNAME), SunOS)
+ ifeq ($(UNAME), NetBSD)
  STRIP = strip -s $(BUILD_DIR)/$(LIBNAME)
- # this platform is both 32 and 64 bits
-@@ -277,7 +282,7 @@ all: tests
+ HUGE_PAGES =
+@@ -277,7 +282,7 @@
  ## Build a release version of the library
  library: clean
 	@echo "make library"
@@ -23,22 +21,9 @@ index 82843a3..a32849b 100644
 	$(STRIP)
 
  ## Build a debug version of the library
-diff --git a/src/iso_alloc.c b/src/iso_alloc.c
-index 5e1f8fa..c291d02 100644
---- a/src/iso_alloc.c
-+++ b/src/iso_alloc.c
-@@ -10,10 +10,14 @@
- #include "iso_alloc_internal.h"
- #include "iso_alloc_util.h"
-
-+#if defined(__HAIKU__) && defined(__linux__) == 0
-+__asm__(".section .note.GNU-stack,\"\",@progbits");
-+#endif
-+
- #if USE_SPINLOCK
- atomic_flag root_busy_flag;
- #else
-@@ -13,7 +17,7 @@
+--- src/iso_alloc.c	2026-03-01 12:16:11.257844810 +0000
++++ src/iso_alloc.c	2026-03-01 12:16:11.705844805 +0000
+@@ -13,7 +13,7 @@
  #if USE_SPINLOCK
  atomic_flag root_busy_flag;
  #else
@@ -47,10 +32,19 @@ index 5e1f8fa..c291d02 100644
  #endif
  /* We cannot initialize this on thread creation so
   * we can't mmap them somewhere with guard pages but
-diff --git a/src/iso_alloc_random.c b/src/iso_alloc_random.c
-index 408c92b..e3a50b5 100644
---- a/src/iso_alloc_random.c
-+++ b/src/iso_alloc_random.c
+--- src/iso_alloc_sanity.c	2026-03-01 12:16:11.261844810 +0000
++++ src/iso_alloc_sanity.c	2026-03-01 12:16:11.973844802 +0000
+@@ -13,7 +13,7 @@
+ #if USE_SPINLOCK
+ atomic_flag sane_cache_flag;
+ #else
+-pthread_mutex_t sane_cache_mutex;
++pthread_mutex_t sane_cache_mutex = PTHREAD_MUTEX_INITIALIZER;
+ #endif
+ #endif
+
+--- src/iso_alloc_random.c	2026-03-01 12:16:11.261844810 +0000
++++ src/iso_alloc_random.c	2026-03-01 12:16:12.245844799 +0000
 @@ -15,7 +15,7 @@
  #include <Security/SecRandom.h>
  #elif __FreeBSD__ || __DragonFly__ || __linux__ || __ANDROID__
@@ -60,7 +54,7 @@ index 408c92b..e3a50b5 100644
  #include <stdlib.h>
  #elif __sun
  #include <sys/random.h>
-@@ -59,7 +59,7 @@ INTERNAL_HIDDEN INLINE uint64_t rand_uint64(void) {
+@@ -59,7 +59,7 @@
      ret = SecRandomCopyBytes(kSecRandomDefault, sizeof(val), &val);
  #elif __FreeBSD__ || __DragonFly__ || __linux__ || __ANDROID__ || __sun
      ret = getrandom(&val, sizeof(val), GRND_NONBLOCK) != sizeof(val);
@@ -68,16 +62,4 @@ index 408c92b..e3a50b5 100644
 +#elif __NetBSD__ || __HAIKU__
      /* Temporary solution until NetBSD 10 released with getrandom support */
      arc4random_buf(&val, sizeof(val));
- #endif
-diff --git a/src/iso_alloc_sanity.c b/src/iso_alloc_sanity.c
-index b8b38aa..4d97204 100644
---- a/src/iso_alloc_sanity.c
-+++ b/src/iso_alloc_sanity.c
-@@ -13,7 +13,7 @@
- #if USE_SPINLOCK
- atomic_flag sane_cache_flag;
- #else
--pthread_mutex_t sane_cache_mutex;
-+pthread_mutex_t sane_cache_mutex = PTHREAD_MUTEX_INITIALIZER;
- #endif
  #endif
