@@ -735,7 +735,7 @@ fi
 
 if test "$setup_tc" = "1"; then
   checkout tc $version_tc https://github.com/gperftools/gperftools
-  patch -p0 -l -N < "$curdir/patches/gperftools_haiku.patch" || true
+  patch -p1 -l -N < "$curdir/patches/gperftools_haiku.patch" || true
   if test -f configure; then
     echo "already configured"
   else
