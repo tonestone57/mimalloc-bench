@@ -1,6 +1,38 @@
---- a/ffmalloc.c
-+++ b/ffmalloc.c
-@@ -1136,6 +1136,10 @@
+--- ffmalloc.c.orig	2026-03-01 21:57:32.049958183 +0000
++++ ffmalloc.c	2026-03-01 21:57:45.445958032 +0000
+@@ -530,6 +530,9 @@
+
+ /*** Library Globals ***/
+ static int isInit = 0;
++#ifndef _WIN64
++static __thread int isCleaning = 0;
++#endif
+
+ // Number of pools currently allocated
+ // TODO: move this into future global profiling structure
+@@ -1115,8 +1118,10 @@
+ // Thread exit cleanup
+ static void cleanup_thread(void* ptr) {
+	if (ptr != NULL) {
++		isCleaning = 1;
+		destroy_tcache((struct threadcache_t*)ptr);
+		ffmetadata_free(ptr, sizeof(struct threadcache_t));
++		isCleaning = 0;
+	}
+ }
+
+@@ -1124,6 +1129,10 @@
+ static inline struct threadcache_t* get_threadcache(struct arena_t* arena) {
+	struct threadcache_t* tcache = (struct threadcache_t*)pthread_getspecific(arena->tlsIndex);
+	if (tcache == NULL) {
++		if (isCleaning) {
++			return NULL;
++		}
++
+		// No thread cache found so create one
+		tcache = (struct threadcache_t*)ffmetadata_alloc(sizeof(struct threadcache_t));
+		init_tcache(tcache, arena);
+@@ -1137,7 +1146,11 @@
 
  // Returns the index of the large list index to use based on the current CPU
  static unsigned int get_large_list_index() {
@@ -11,3 +43,14 @@
 +#endif
 	return cpuId < 0 ? 0 : (unsigned int)cpuId % MAX_LARGE_LISTS;
  }
+
+@@ -1680,6 +1693,9 @@
+	// from a per-thread cache, we don't have to
+	// acquire and release locks
+	struct threadcache_t* tcache = get_threadcache(arena);
++	if (tcache == NULL) {
++		return NULL;
++	}
+
+	// Select the correct bin based on size and alignment
+	bin = &tcache->bins[GET_BIN(size)];
