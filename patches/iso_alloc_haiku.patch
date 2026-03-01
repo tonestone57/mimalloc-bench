@@ -1,5 +1,5 @@
---- Makefile	2026-03-01 12:16:11.237844810 +0000
-+++ Makefile	2026-03-01 12:16:11.341844809 +0000
+--- a/Makefile	2026-03-01 12:16:11.237844810 +0000
++++ b/Makefile	2026-03-01 12:16:11.341844809 +0000
 @@ -230,6 +230,11 @@
  OS_FLAGS = -I/usr/local/cxx_atomics
  endif
@@ -21,8 +21,8 @@
 	$(STRIP)
 
  ## Build a debug version of the library
---- src/iso_alloc.c	2026-03-01 12:16:11.257844810 +0000
-+++ src/iso_alloc.c	2026-03-01 12:16:11.705844805 +0000
+--- a/src/iso_alloc.c	2026-03-01 12:16:11.257844810 +0000
++++ b/src/iso_alloc.c	2026-03-01 12:16:11.705844805 +0000
 @@ -13,7 +13,7 @@
  #if USE_SPINLOCK
  atomic_flag root_busy_flag;
@@ -32,8 +32,8 @@
  #endif
  /* We cannot initialize this on thread creation so
   * we can't mmap them somewhere with guard pages but
---- src/iso_alloc_sanity.c	2026-03-01 12:16:11.261844810 +0000
-+++ src/iso_alloc_sanity.c	2026-03-01 12:16:11.973844802 +0000
+--- a/src/iso_alloc_sanity.c	2026-03-01 12:16:11.261844810 +0000
++++ b/src/iso_alloc_sanity.c	2026-03-01 12:16:11.973844802 +0000
 @@ -13,7 +13,7 @@
  #if USE_SPINLOCK
  atomic_flag sane_cache_flag;
@@ -43,8 +43,8 @@
  #endif
  #endif
 
---- src/iso_alloc_random.c	2026-03-01 12:16:11.261844810 +0000
-+++ src/iso_alloc_random.c	2026-03-01 12:16:12.245844799 +0000
+--- a/src/iso_alloc_random.c	2026-03-01 12:16:11.261844810 +0000
++++ b/src/iso_alloc_random.c	2026-03-01 12:16:12.245844799 +0000
 @@ -15,7 +15,7 @@
  #include <Security/SecRandom.h>
  #elif __FreeBSD__ || __DragonFly__ || __linux__ || __ANDROID__
