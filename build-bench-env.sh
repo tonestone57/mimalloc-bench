@@ -1005,6 +1005,7 @@ if test "$setup_lean" = "1"; then
   checkout lean $version_lean https://github.com/leanprover-community/lean
   patch -p1 -l -N < "$curdir/patches/lean_alpine.patch" || true
   if test "$haiku" = "1"; then
+    patch -p1 -l -N < "$curdir/patches/lean_haiku.patch" || true
     ensure_haiku_tool cmake cmake
   fi
   mkdir -p out/release
