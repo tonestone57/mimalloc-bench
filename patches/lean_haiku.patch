@@ -1,0 +1,27 @@
+--- a/src/util/path.cpp	2026-03-01 10:04:11.918997825 +0000
++++ b/src/util/path.cpp	2026-03-01 10:04:12.250997822 +0000
+@@ -72,6 +72,24 @@
+     return std::string(buf2);
+ }
+ bool is_path_sep(char c) { return c == g_path_sep; }
++#elif defined(__HAIKU__)
++// Haiku version
++#include <image.h>
++#include <OS.h>
++static char g_path_sep     = ':';
++static constexpr char g_sep          = '/';
++static char g_bad_sep      = '\\';
++std::string get_exe_location() {
++    image_info info;
++    int32 cookie = 0;
++    while (get_next_image_info(0, &cookie, &info) == B_OK) {
++        if (info.type == B_APP_IMAGE) {
++            return std::string(info.name);
++        }
++    }
++    throw exception("failed to locate Lean executable location");
++}
++bool is_path_sep(char c) { return c == g_path_sep; }
+ #else
+ // Linux version
+ #include <unistd.h>
