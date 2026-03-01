@@ -3,6 +3,9 @@
 
 set -eo pipefail
 
+# Force git to use https instead of ssh to avoid issues with submodules in CI
+git config --global url."https://github.com/".insteadOf git@github.com:
+
 CFLAGS='-march=native'
 CXXFLAGS='-march=native'
 
