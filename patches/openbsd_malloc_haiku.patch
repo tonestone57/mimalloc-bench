@@ -1,0 +1,27 @@
+--- a/thread_private.h
++++ b/thread_private.h
+@@ -10,7 +10,12 @@
+
+ #define PGSHIFT 12
+
++#ifdef __HAIKU__
++#include <unistd.h>
++#define issetugid() (0)
++#else
+ #define issetugid() ((geteuid() != getuid()) || (getegid() != getgid()))
++#endif
+
+
+ void __attribute__((visibility("hidden"))) arc4random_addrandom(u_char *dat, int datlen);
+--- a/arc4random.c
++++ b/arc4random.c
+@@ -37,6 +37,9 @@
+ #include <sys/types.h>
+ #include <sys/param.h>
+ #include <sys/time.h>
++#ifdef __HAIKU__
++#include <stdlib.h>
++#endif
+ #ifdef __OpenBSD__
+ #include <sys/sysctl.h>
+ #endif
