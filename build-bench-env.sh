@@ -433,7 +433,6 @@ if test -f ./build-bench-env.sh; then
     setup_mesh=0
     setup_nomesh=0
     setup_tcg=0
-    setup_om=0
     setup_lp=0
     setup_pa=0
     setup_linux=0   # Linux kernel build -- not applicable on Haiku
@@ -875,9 +874,17 @@ fi
 if test "$setup_om" = "1"; then
   checkout om $version_om https://github.com/andrewg-felinemenace/Linux-OpenBSD-malloc
   patch -p1 -l -N < "$curdir/patches/openbsd_malloc_linux.patch" || true
+  if test "$haiku" = "1"; then
+    patch -p1 -l -N < "$curdir/patches/openbsd_malloc_haiku.patch" || true
+  fi
   sed -i 's/rm \*.o \*.so.1/rm -f *.o *.so.1/' Makefile
   sed -i 's/-gstabs+//' Makefile
-  make -j $procs
+  if test "$haiku" = "1"; then
+    OS_LDFLAGS="-lnetwork"
+    make -j $procs LDFLAGS="$OS_LDFLAGS"
+  else
+    make -j $procs
+  fi
   popd
 fi
 
