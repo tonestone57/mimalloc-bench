@@ -6,7 +6,7 @@
 # Allocators and tests
 # --------------------------------------------------------------------
 
-readonly alloc_all="sys dh ff fg gd hd hm hml iso je lf lp lt mi mi-sec mi2 mi2-sec mi3 mi3-sec mng mesh nomesh pa rp sc scudo sg sm sn sn-sec sn-dbg tbb tc tcg mi-dbg mi2-dbg mi3-dbg xmi xmi-sec xmi-dbg yal"
+readonly alloc_all="sys dh ff fg gd hd hm hml iso je lf lp lt mi mi-sec mi2 mi2-sec mi3 mi3-sec mng om mesh nomesh pa rp sc scudo sg sm sn sn-sec sn-dbg tbb tc tcg mi-dbg mi2-dbg mi3-dbg xmi xmi-sec xmi-dbg yal"
 readonly alloc_secure="dh ff gd hm hml iso mi-sec mi2-sec mi3-sec mng pa scudo sg sn-sec"
 alloc_run=""           # allocators to run (expanded by command line options)
 alloc_installed="sys"  # later expanded to include all installed allocators
@@ -92,7 +92,8 @@ case "$OSTYPE" in
     libc="${libc#ldd }"
     if command -v nproc > /dev/null; then 
       procs=`nproc`
-    fi;;
+    fi
+    ;;
 esac
 
 
@@ -144,6 +145,7 @@ alloc_lib_add "lp"     "$localdevdir/lp/Source/bmalloc/libpas/build-cmake-defaul
 alloc_lib_add "lt"     "$localdevdir/lt/gnu.make.lib/libltalloc$extso"
 alloc_lib_add "mesh"   "$localdevdir/mesh/build/lib/libmesh$extso"
 alloc_lib_add "mng"    "$localdevdir/mng/libmallocng$extso"
+alloc_lib_add "om"     "$localdevdir/om/libobsdmalloc.so.1"
 alloc_lib_add "nomesh" "$localdevdir/nomesh/build/lib/libmesh$extso"
 alloc_lib_add "pa"     "$localdevdir/pa/partition_alloc_builder/out/Default/libpalib$extso"
 alloc_lib_add "rp"     "$lib_rp"
@@ -456,6 +458,7 @@ while : ; do
             echo "  mi3                          use mimalloc3"
             echo "  mi3-sec                      use secure version of mimalloc3"
             echo "  mng                          use mallocng"
+            echo "  om                           use openbsd-malloc"
             echo "  nomesh                       use mesh with meshing disabled"
             echo "  pa                           use PartitionAlloc"
             echo "  rp                           use rpmalloc"
@@ -620,7 +623,12 @@ function run_test_env_cmd { # <test name> <allocator name> <environment args> <c
   case "$1" in
     redis*)
        echo "start server"
-       $timecmd -a -o "$benchres.line" -f "$1${benchfill:${#1}} $2${allocfill:${#2}} %E %M %U %S %F %R" $env_cmd $3 $redis_dir/redis-server > "$outfile.server.txt"  &
+       if [ -n "$timecmd" ]; then
+         $timecmd -a -o "$benchres.line" -f "$1${benchfill:${#1}} $2${allocfill:${#2}} %E %M %U %S %F %R" $env_cmd $3 $redis_dir/redis-server > "$outfile.server.txt"  &
+       else
+         echo "$1${benchfill:${#1}} $2${allocfill:${#2}} 0:0.00 0 0.00 0.00 0 0" > "$benchres.line"
+         $env_cmd $3 $redis_dir/redis-server > "$outfile.server.txt"  &
+       fi
        sleep 1s
        $redis_dir/redis-cli flushall
        sleep 1s
@@ -663,7 +671,14 @@ function run_test_env_cmd { # <test name> <allocator name> <environment args> <c
        done
        ;;
     *)
-       $timecmd -a -o "$benchres.line" -f "$1${benchfill:${#1}} $2${allocfill:${#2}} %E %M %U %S %F %R" $env_cmd $3 $4 < "$infile" > "$outfile";;
+       if [ -n "$timecmd" ]; then
+         $timecmd -a -o "$benchres.line" -f "$1${benchfill:${#1}} $2${allocfill:${#2}} %E %M %U %S %F %R" $env_cmd $3 $4 < "$infile" > "$outfile"
+       else
+         # if time command is not available, we use the shell's time but that is hard to capture.
+         # For now, just run it and manually add a dummy entry to the benchres.line
+         echo "$1${benchfill:${#1}} $2${allocfill:${#2}} 0:0.00 0 0.00 0.00 0 0" > "$benchres.line"
+         $env_cmd $3 $4 < "$infile" > "$outfile"
+       fi;;
   esac
 
   # fixup larson with relative time
