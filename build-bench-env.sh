@@ -877,14 +877,10 @@ if test "$setup_om" = "1"; then
   if test "$haiku" = "1"; then
     patch -p1 -l -N < "$curdir/patches/openbsd_malloc_haiku.patch" || true
   fi
-  sed -i 's/rm \*.o \*.so.1/rm -f *.o *.so.1/' Makefile
+  sed -i 's/rm \*.o \*.so.1/rm -f *.o *$(extso)*/' Makefile
+  sed -i "s/libobsdmalloc.so.1/libobsdmalloc$extso/g" Makefile
   sed -i 's/-gstabs+//' Makefile
-  if test "$haiku" = "1"; then
-    OS_LDFLAGS="-lnetwork"
-    make -j $procs LDFLAGS="$OS_LDFLAGS"
-  else
-    make -j $procs
-  fi
+  make -j $procs extso=$extso
   popd
 fi
 

@@ -145,7 +145,7 @@ alloc_lib_add "lp"     "$localdevdir/lp/Source/bmalloc/libpas/build-cmake-defaul
 alloc_lib_add "lt"     "$localdevdir/lt/gnu.make.lib/libltalloc$extso"
 alloc_lib_add "mesh"   "$localdevdir/mesh/build/lib/libmesh$extso"
 alloc_lib_add "mng"    "$localdevdir/mng/libmallocng$extso"
-alloc_lib_add "om"     "$localdevdir/om/libobsdmalloc.so.1"
+alloc_lib_add "om"     "$localdevdir/om/libobsdmalloc$extso"
 alloc_lib_add "nomesh" "$localdevdir/nomesh/build/lib/libmesh$extso"
 alloc_lib_add "pa"     "$localdevdir/pa/partition_alloc_builder/out/Default/libpalib$extso"
 alloc_lib_add "rp"     "$lib_rp"
