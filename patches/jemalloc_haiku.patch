@@ -25,19 +25,50 @@ index 3bb8d26c..ac856714 100644
  #  ifndef __NetBSD__
 	int ret = pthread_setaffinity_np(pthread_self(), sizeof(cpuset_t),
 diff --git a/src/jemalloc.c b/src/jemalloc.c
-index 7655de4e..d5668149 100644
+index 7655de4e..0ef9892b 100644
 --- a/src/jemalloc.c
 +++ b/src/jemalloc.c
-@@ -721,7 +721,7 @@ malloc_ncpus(void) {
+@@ -2,6 +2,10 @@
+ #include "jemalloc/internal/jemalloc_preamble.h"
+ #include "jemalloc/internal/jemalloc_internal_includes.h"
+
++#ifdef __HAIKU__
++#include <OS.h>
++#endif
++
+ #include "jemalloc/internal/assert.h"
+ #include "jemalloc/internal/bin.h"
+ #include "jemalloc/internal/ctl.h"
+@@ -200,9 +204,13 @@ static uint8_t	malloc_slow_flags;
+ #ifdef JEMALLOC_THREADED_INIT
+ /* Used to let the initializing thread recursively allocate. */
+ #  define NO_INITIALIZER	((unsigned long)0)
+-#  define INITIALIZER		pthread_self()
+-#  define IS_INITIALIZER	(malloc_initializer == pthread_self())
++#  ifdef __HAIKU__
++#    define INITIALIZER		((pthread_t)(uintptr_t)find_thread(NULL))
++#    define IS_INITIALIZER	(malloc_initializer == (pthread_t)(uintptr_t)find_thread(NULL))
++#  else
++#    define INITIALIZER		pthread_self()
++#    define IS_INITIALIZER	(malloc_initializer == pthread_self())
++#  endif
+ static pthread_t		malloc_initializer = NO_INITIALIZER;
+ #else
+ #  define NO_INITIALIZER	false
+@@ -721,7 +729,11 @@ malloc_ncpus(void) {
 	SYSTEM_INFO si;
 	GetSystemInfo(&si);
 	result = si.dwNumberOfProcessors;
 -#elif defined(CPU_COUNT)
++#elif defined(__HAIKU__)
++	system_info si;
++	get_system_info(&si);
++	result = si.cpu_count;
 +#elif defined(CPU_COUNT) && !defined(__HAIKU__)
 	/*
 	 * glibc >= 2.6 has the CPU_COUNT macro.
 	 *
-@@ -769,7 +769,7 @@ malloc_cpu_count_is_deterministic()
+@@ -769,7 +781,7 @@ malloc_cpu_count_is_deterministic()
 	if (cpu_onln != cpu_conf) {
 		return false;
 	}
@@ -46,3 +77,47 @@ index 7655de4e..d5668149 100644
  #    if defined(__FreeBSD__) || defined(__DragonFly__)
 	cpuset_t set;
  #    else
+@@ -1951,7 +1963,8 @@ malloc_init_hard_a0_locked() {
+	}
+
+ #if (defined(JEMALLOC_HAVE_PTHREAD_ATFORK) && !defined(JEMALLOC_MUTEX_INIT_CB) \
+-    && !defined(JEMALLOC_ZONE) && !defined(_WIN32) && \
++    && !defined(JEMALLOC_ZONE) && !defined(_WIN32) && !defined(__HAIKU__) \
++    && !defined(__native_client__))
+	/* LinuxThreads' pthread_atfork() allocates. */
+	if (pthread_atfork(jemalloc_prefork, jemalloc_postfork_parent,
+	    jemalloc_postfork_child) != 0) {
+diff --git a/src/pages.c b/src/pages.c
+index a7373735..65c56c2d 100644
+--- a/src/pages.c
++++ b/src/pages.c
+@@ -701,6 +701,10 @@ label_return:
+
+ static void
+ init_thp_state(void) {
++#ifdef __HAIKU__
++	opt_thp = init_system_thp_mode = thp_mode_not_supported;
++	return;
++#endif
+	if (!have_madvise_huge && !have_memcntl) {
+		if (metadata_thp_enabled() && opt_abort) {
+			malloc_write("<jemalloc>: no MADV_HUGEPAGE support\n");
+@@ -783,7 +787,7 @@ pages_boot(void) {
+ #ifndef _WIN32
+	mmap_flags = MAP_PRIVATE | MAP_ANON;
+ #endif
+-
++#ifndef __HAIKU__
+ #ifdef JEMALLOC_SYSCTL_VM_OVERCOMMIT
+	os_overcommits = os_overcommits_sysctl();
+ #elif defined(JEMALLOC_PROC_SYS_VM_OVERCOMMIT_MEMORY)
+@@ -797,7 +801,10 @@ pages_boot(void) {
+	os_overcommits = true;
+ #else
+	os_overcommits = false;
+ #endif
++#else
++	os_overcommits = false;
++#endif
+
+	init_thp_state();
