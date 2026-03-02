@@ -77,6 +77,7 @@ readonly version_lf=master   # ~unmaintained since 2018
 readonly version_lp=main
 readonly version_lt=master   # ~unmaintained since 2019
 readonly version_mesh=master # ~unmaintained since 2021
+readonly version_om=master   # ~unmaintained since 2011
 readonly version_mi=v1.9.7
 readonly version_mi2=v2.2.7
 readonly version_mi3=v3.2.8
@@ -118,6 +119,7 @@ setup_lf=0
 setup_lp=0
 setup_lt=0
 setup_mesh=0
+setup_om=0
 setup_mi=0
 setup_mi2=0
 setup_mi3=0
@@ -169,6 +171,7 @@ while : ; do
         setup_iso=$flag_arg
         setup_je=$flag_arg
         setup_lp=$flag_arg
+        setup_om=$flag_arg
         setup_mi=$flag_arg
         setup_mi2=$flag_arg
         setup_mi3=$flag_arg
@@ -229,6 +232,8 @@ while : ; do
         setup_lp=$flag_arg;;
     lt)
         setup_lt=$flag_arg;;
+    om)
+        setup_om=$flag_arg;;
     lean)
         setup_lean=$flag_arg;;
     mng)
@@ -298,6 +303,7 @@ while : ; do
         echo "  lp                           setup libpas ($version_lp)"
         echo "  lt                           setup ltmalloc ($version_lt)"
         echo "  mesh                         setup mesh allocator ($version_mesh)"
+        echo "  om                           setup openbsd-malloc ($version_om)"
         echo "  mi, mi-sec, mi-dbg           setup mimalloc ($version_mi)"
         echo "  mi2, mi2-sec, mi2-dbg        setup mimalloc ($version_mi2)"
         echo "  mi3, mi3-sec, mi3-dbg        setup mimalloc ($version_mi3)"
@@ -427,6 +433,7 @@ if test -f ./build-bench-env.sh; then
     setup_mesh=0
     setup_nomesh=0
     setup_tcg=0
+    setup_om=0
     setup_lp=0
     setup_pa=0
     setup_linux=0   # Linux kernel build -- not applicable on Haiku
@@ -862,6 +869,15 @@ if test "$setup_mesh" = "1"; then
   checkout mesh $version_mesh https://github.com/plasma-umass/mesh
   cmake .
   make  # https://github.com/plasma-umass/Mesh/issues/96
+  popd
+fi
+
+if test "$setup_om" = "1"; then
+  checkout om $version_om https://github.com/andrewg-felinemenace/Linux-OpenBSD-malloc
+  patch -p1 -l -N < "$curdir/patches/openbsd_malloc_linux.patch" || true
+  sed -i 's/rm \*.o \*.so.1/rm -f *.o *.so.1/' Makefile
+  sed -i 's/-gstabs+//' Makefile
+  make -j $procs
   popd
 fi
 

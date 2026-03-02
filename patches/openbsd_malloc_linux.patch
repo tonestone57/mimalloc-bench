@@ -1,0 +1,50 @@
+diff --git a/arc4random.c b/arc4random.c
+index 35afdad..c2ad6aa 100644
+--- a/arc4random.c
++++ b/arc4random.c
+@@ -36,7 +36,9 @@
+ #include <sys/types.h>
+ #include <sys/param.h>
+ #include <sys/time.h>
++#ifdef __OpenBSD__
+ #include <sys/sysctl.h>
++#endif
+ #include "thread_private.h"
+
+
+@@ -100,34 +102,7 @@ arc4_addrandom(u_char *dat, int datlen)
+ static int
+ arc4_seed_sysctl_linux(void)
+ {
+-	/* Based on code by William Ahern, this function tries to use the
+-	 * RANDOM_UUID sysctl to get entropy from the kernel.  This can work
+-	 * even if /dev/urandom is inaccessible for some reason (e.g., we're
+-	 * running in a chroot). */
+-	int mib[] = { CTL_KERN, KERN_RANDOM, RANDOM_UUID };
+-	unsigned char buf[ADD_ENTROPY];
+-	size_t len, n;
+-	unsigned i;
+-	int any_set;
+-
+-	memset(buf, 0, sizeof(buf));
+-
+-	for (len = 0; len < sizeof(buf); len += n) {
+-		n = sizeof(buf) - len;
+-
+-		if (0 != sysctl(mib, 3, &buf[len], &n, NULL, 0))
+-			return -1;
+-	}
+-	/* make sure that the buffer actually got set. */
+-	for (i=0,any_set=0; i<sizeof(buf); ++i) {
+-		any_set |= buf[i];
+-	}
+-	if (!any_set)
+-		return -1;
+-
+-	arc4_addrandom(buf, sizeof(buf));
+-	memset(buf, 0, sizeof(buf));
+-	return 0;
++	return -1;
+ }
+
+ static ssize_t

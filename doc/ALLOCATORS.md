@@ -20,6 +20,7 @@ This document lists the memory allocators supported by the `mimalloc-bench` suit
 | **mi2** | mimalloc (v2.x) | `v2.2.7` | [github.com/microsoft/mimalloc](https://github.com/microsoft/mimalloc) |
 | **mi3** | mimalloc (v3.x) | `v3.2.8` | [github.com/microsoft/mimalloc](https://github.com/microsoft/mimalloc) |
 | **mng** | mallocng | `master` | [github.com/richfelker/mallocng-draft](https://github.com/richfelker/mallocng-draft) |
+| **om** | OpenBSD Malloc | `master` | [github.com/andrewg-felinemenace/Linux-OpenBSD-malloc](https://github.com/andrewg-felinemenace/Linux-OpenBSD-malloc) |
 | **nomesh** | Mesh (no meshing) | `master` | [github.com/plasma-umass/mesh](https://github.com/plasma-umass/mesh) |
 | **pa** | PartitionAlloc | `main` | [github.com/1c3t3a/partition_alloc_builder.git](https://github.com/1c3t3a/partition_alloc_builder.git) |
 | **rp** | rpmalloc | `1.4.5` | [github.com/mjansson/rpmalloc](https://github.com/mjansson/rpmalloc) |
